@@ -235,70 +235,7 @@ namespace ProjectMalnatiServer
             catch (Exception ex) { Console.WriteLine(ex.ToString()); }
         }
 
-        //private void parseFunction(string bufferString)
-        //{
-        //    foreach (char ch in bufferString)
-        //    {
-        //        if (ch == '\0')
-        //            return;
-
-        //        if (ch == 'U')
-        //        {
-        //            Win32.mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, (uint)p.x, (uint)p.y, 0, 0);
-        //            continue;
-        //        }
-
-        //        if (ch == 'D')
-        //        {
-        //            Win32.mouse_event(MOUSEEVENTF_LEFTDOWN, (uint)p.x, (uint)p.y, 0, 0);
-        //            continue;
-        //        }
-
-        //        if (ch == 'R')
-        //        {
-        //            Win32.mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, (uint)p.x, (uint)p.y, 0, 0);
-        //            continue;
-        //        }
-
-        //        if (ch != '?' && ch != ';')
-        //        {
-        //            if (isX)
-        //            { coordX += Convert.ToString(ch); }
-        //            else
-        //            { coordY += Convert.ToString(ch); }
-        //        }
-        //        else
-        //        {
-        //            if (ch == ';')
-        //                isX = false;
-
-        //            else if (ch == '?')
-        //            {
-        //                isX = true;
-        //                if (coordX != "" && coordY != "")
-        //                {
-        //                    double x_rel = Convert.ToDouble(coordX);
-        //                    double y_rel = Convert.ToDouble(coordY);
-        //                    //p.x = Convert.ToInt16(x_rel * System.Windows.SystemParameters.PrimaryScreenWidth);
-        //                    //p.y = Convert.ToInt16(y_rel * System.Windows.SystemParameters.PrimaryScreenHeight);
-
-        //                    p.x = Convert.ToInt16(x_rel * 1920);
-        //                    p.y = Convert.ToInt16(y_rel * 1200);
-
-        //                    coordX = "";
-        //                    coordY = "";
-
-        //                    //Win32.ClientToScreen(this.Handle, ref p);
-        //                    //Win32.ClientToScreen(hWnd, ref p);
-
-        //                    Console.WriteLine("x:" + p.x + " y:" + p.y + "\n");
-
-        //                    Win32.SetCursorPos(p.x, p.y);
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
+        
 
         private void parseFunction(string bufferString)
         {
@@ -363,7 +300,7 @@ namespace ProjectMalnatiServer
                 }
             }
         }
-
+        //uu
         public void MyReceive()
         {
             while (!_shouldStop)
