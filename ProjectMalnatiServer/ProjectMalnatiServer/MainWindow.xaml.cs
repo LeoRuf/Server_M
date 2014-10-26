@@ -50,6 +50,7 @@ namespace ProjectMalnatiServer
 
         private volatile bool _shouldStop;
         private bool connesso;
+        private bool  client=false;
 
         public MainWindow()
         {
@@ -124,13 +125,16 @@ namespace ProjectMalnatiServer
                 this.textBoxIP.IsEnabled = false;
                 this.textBoxPort.IsEnabled = false;
                 this.textBoxPassword.IsEnabled = false;
-                this.pass = this.textBoxPassword.Text;
+                this.pass = this.textBoxPassword.Password;
                 workerThreadConnection = new Thread(connetti);
                 workerThreadConnection.Start();
             }
             else
-                // else if(this.connesso == true && this.buttonListen.Content == "Cancel")
+            // else if(this.connesso == true && this.buttonListen.Content == "Cancel")
+            {
+                //MessageBox.Show("Ho premuto su Cancel o Disconnetti sto per annullare la richiesta!");
                 disconnetti();
+            }
         }
 
         //il metodo è richiamato sia alla pressione del bottone disconnetti sia
@@ -146,21 +150,37 @@ namespace ProjectMalnatiServer
             if (workerThread != null)
             {
                 //workerThread.Abort();
-                workerThread.Join();
+               // workerThread.Join();
             }
             if (acceptedSocket != null)
             {
-                acceptedSocket.Shutdown(SocketShutdown.Both);
-                //acceptedSocket.Close(); //senno' non posso riciclare il socket
-                acceptedSocket.Disconnect(true);
+                if (client == true)
+                {   
+                    acceptedSocket.Shutdown(SocketShutdown.Both);
+                    acceptedSocket.Close();
+                    this.WindowState = WindowState.Maximized;
+                    MessageBox.Show("Client ha chiuso connessione!");
+                    
+                }
+                else
+                {
+                    acceptedSocket.Shutdown(SocketShutdown.Both);
+                    acceptedSocket.Close();
+                    this.WindowState = WindowState.Maximized;
+                }
+                //this.Show();
+                //acceptedSocket.Disconnect(true);
             }
+
             this.connesso = false;
             this.textBoxIP.IsEnabled = true;
             this.textBoxPort.IsEnabled = true;
             this.textBoxPassword.IsEnabled = true;
+            this.textBoxPassword.Password = "";
             this.buttonListen.IsEnabled = true;
             this.buttonListen.Content = "Listen";
             this.listeningTextBlock.Text = "";
+            
             _shouldStop = false; //nel caso non si tratti di chiusura dell'applicazione
         }
 
@@ -168,6 +188,7 @@ namespace ProjectMalnatiServer
         {
             Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             Socket handler = null;
+            _shouldStop = false;
 
             try
             {
@@ -175,6 +196,7 @@ namespace ProjectMalnatiServer
                 listener.Listen(50);
                 IPEndPoint localEndPoint = (IPEndPoint)listener.LocalEndPoint;
                 Console.WriteLine("Listening on {0}:{1}", localEndPoint.Address, localEndPoint.Port);
+
 
                 while (!_shouldStop)
                 {
@@ -201,8 +223,8 @@ namespace ProjectMalnatiServer
                             else
                             {
                                 handler.Send(Encoding.UTF8.GetBytes("N"));
-                                handler.Shutdown(SocketShutdown.Both);
-                                handler.Disconnect(true); //chiude la connessione ma lascia il socket riutilizzabile
+                                //handler.Shutdown(SocketShutdown.Both);
+                                //handler.Disconnect(true); //chiude la connessione ma lascia il socket riutilizzabile
                                 //handler.Close();
                                 //continue;
                             }
@@ -301,6 +323,8 @@ namespace ProjectMalnatiServer
             }
         }
         //uu
+
+        public static void BeginSendCallback(IAsyncResult ar) { }
         public void MyReceive()
         {
             while (!_shouldStop)
@@ -309,9 +333,11 @@ namespace ProjectMalnatiServer
                 {
                     byte[] buffer = new byte[50];
                     string bufferString;
+                    byte[] stringa = Encoding.UTF8.GetBytes("D");
+                    acceptedSocket.BeginSend(stringa,0,stringa.Length,SocketFlags.None, BeginSendCallback, acceptedSocket);
 
                     int numBytes = acceptedSocket.Receive(buffer); //questa receive e' "non bloccante"
-
+                    
                     if (numBytes > 0)
                     {
                         bufferString = Encoding.UTF8.GetString(buffer);
@@ -323,13 +349,17 @@ namespace ProjectMalnatiServer
                 {
                     Console.WriteLine("errore con codice: " + se.ErrorCode);
                     //10060
-                    if (se.ErrorCode != 10060) //perchè se timeout scatta viene lanciata, ma non occorre reagire!
-                    {
-                        disconnetti();
-                        MessageBox.Show("Connessione con il client caduta");
-                        Action showWindow = () => { this.Show(); };
+                    //if (se.ErrorCode != 10060) //perchè se timeout scatta viene lanciata, ma non occorre reagire!
+                      if(se.ErrorCode==10054) //10054 quando il client fa disconnetti o cancella..io faccio la send ma mi da questa eccezione..
+                        {
+                        Action showWindow = () => {
+                            client = true;
+                            disconnetti();
+                        };
                         dispatcher.Invoke(showWindow);
+                        break;
                     }
+                      break;
                 }
             }
             Console.WriteLine("Il thread myReceive sta per terminare\n");
@@ -337,9 +367,13 @@ namespace ProjectMalnatiServer
 
         private void closeWindowOperations(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            disconnetti();
+           // MessageBox.Show("Ho chiuso finestra e ora annullo tutto!");
+            
             if (acceptedSocket != null)
-                acceptedSocket.Close(); //se sto chiudendo l'applicazione il socket va effettivamente chiuso
+                disconnetti();
+            //MessageBox.Show("Sto chiudendo finestra e non sono connesso!");
+            this.Hide();
+            
         }
     }
 
