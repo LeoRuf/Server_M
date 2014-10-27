@@ -155,17 +155,23 @@ namespace ProjectMalnatiServer
             if (acceptedSocket != null)
             {
                 if (client == true)
-                {   
-                    acceptedSocket.Shutdown(SocketShutdown.Both);
-                    acceptedSocket.Close();
+                {
+                    if (acceptedSocket.Connected == true)
+                    {
+                        acceptedSocket.Shutdown(SocketShutdown.Both);
+                        acceptedSocket.Close();
+                    }
+
                     this.WindowState = WindowState.Maximized;
                     MessageBox.Show("Client ha chiuso connessione!");
                     
                 }
                 else
                 {
+                    if(acceptedSocket.Connected==true){
                     acceptedSocket.Shutdown(SocketShutdown.Both);
                     acceptedSocket.Close();
+                    }
                     this.WindowState = WindowState.Maximized;
                 }
                 //this.Show();
@@ -217,7 +223,7 @@ namespace ProjectMalnatiServer
                             {
                                 handler.Send(check);
                                 acceptedSocket = handler;
-                                acceptedSocket.ReceiveTimeout = 30000;
+                                acceptedSocket.ReceiveTimeout = 5000;
                                 break;
                             }
                             else
@@ -349,8 +355,8 @@ namespace ProjectMalnatiServer
                 {
                     Console.WriteLine("errore con codice: " + se.ErrorCode);
                     //10060
-                    //if (se.ErrorCode != 10060) //perchè se timeout scatta viene lanciata, ma non occorre reagire!
-                      if(se.ErrorCode==10054) //10054 quando il client fa disconnetti o cancella..io faccio la send ma mi da questa eccezione..
+                     if (se.ErrorCode != 10060) //perchè se timeout scatta viene lanciata, ma non occorre reagire!
+                      //if(se.ErrorCode==10054) //10054 quando il client fa disconnetti o cancella..io faccio la send ma mi da questa eccezione..
                         {
                         Action showWindow = () => {
                             client = true;
@@ -359,7 +365,7 @@ namespace ProjectMalnatiServer
                         dispatcher.Invoke(showWindow);
                         break;
                     }
-                      break;
+                      
                 }
             }
             Console.WriteLine("Il thread myReceive sta per terminare\n");
