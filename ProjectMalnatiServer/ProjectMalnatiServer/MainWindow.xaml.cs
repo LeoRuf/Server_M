@@ -323,27 +323,165 @@ namespace ProjectMalnatiServer
                     continue;
                 }
 
-                if (ch == 'h')
+                if (ch == 'Q')
                 {
-                    Console.WriteLine("H");
-                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_H);
+                    Console.WriteLine("q");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_Q);
+                    continue;
                 }
-                if (ch == 'e')
+                if (ch == 'W')
                 {
-                    Console.WriteLine("E");
+                    Console.WriteLine("w");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_W);
+                    continue;
+                }
+                if (ch == 'E')
+                {
+                    Console.WriteLine("e");
                     InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_E);
+                    continue;
                 }
-                if (ch == 'l')
+                if (ch == 'R')
                 {
-                    Console.WriteLine("L");
-                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_L);
+                    Console.WriteLine("r");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_R);
+                    continue;
                 }
-                if (ch == 'o')
+                if (ch == 'T')
                 {
-                    Console.WriteLine("O");
+                    Console.WriteLine("t");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_T);
+                    continue;
+                }
+                if (ch == 'Y')
+                {
+                    Console.WriteLine("y");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_Y);
+                    continue;
+                }
+                if (ch == 'U')
+                {
+                    Console.WriteLine("u");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_U);
+                    continue;
+                }
+                if (ch == 'I')
+                {
+                    Console.WriteLine("i");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_I);
+                    continue;
+                }
+                if (ch == 'O')
+                {
+                    Console.WriteLine("o");
                     InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_O);
+                    continue;
                 }
-
+                if (ch == 'P')
+                {
+                    Console.WriteLine("p");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_H);
+                    continue;
+                }
+                if (ch == 'A')
+                {
+                    Console.WriteLine("a");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_A);
+                    continue;
+                }
+                if (ch == 'S')
+                {
+                    Console.WriteLine("s");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_S);
+                    continue;
+                }
+                if (ch == 'D')
+                {
+                    Console.WriteLine("d");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_D);
+                    continue;
+                }
+                if (ch == 'F')
+                {
+                    Console.WriteLine("f");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_F);
+                    continue;
+                }
+                if (ch == 'G')
+                {
+                    Console.WriteLine("g");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_G);
+                    continue;
+                }
+                if (ch == 'H')
+                {
+                    Console.WriteLine("h");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_H);
+                    continue;
+                }
+                if (ch == 'J')
+                {
+                    Console.WriteLine("j");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_J);
+                    continue;
+                }
+                if (ch == 'K')
+                {
+                    Console.WriteLine("k");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_K);
+                    continue;
+                }
+                
+                if (ch == 'L')
+                {
+                    Console.WriteLine("l");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_L);
+                    continue;
+                }
+                if (ch == 'Z')
+                {
+                    Console.WriteLine("z");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_Z);
+                    continue;
+                }
+                
+                if (ch == 'X')
+                {
+                    Console.WriteLine("x");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_X);
+                    continue;
+                }
+                if (ch == 'C')
+                {
+                    Console.WriteLine("c");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_C);
+                    continue;
+                }
+                if (ch == 'V')
+                {
+                    Console.WriteLine("v");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_V);
+                    continue;
+                }
+                if (ch == 'B')
+                {
+                    Console.WriteLine("b");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_B);
+                    continue;
+                }
+                if (ch == 'N')
+                {
+                    Console.WriteLine("n");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_N);
+                    continue;
+                }
+                if (ch == 'M')
+                {
+                    Console.WriteLine("m");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_M);
+                    continue;
+                }
+                
                 if (ch != '?' && ch != ';')
                 {
                     if (isX)
