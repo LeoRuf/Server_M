@@ -18,6 +18,7 @@ using System.Windows.Interop;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Threading;
+using WindowsInput;
 
 
 namespace ProjectMalnatiServer
@@ -51,6 +52,9 @@ namespace ProjectMalnatiServer
         private volatile bool _shouldStop;
         private bool connesso;
         private bool  client=false;
+        bool isValidIp = true;
+        bool isValidPorta = true;
+        bool isValidPass = true;
 
         public MainWindow()
         {
@@ -72,7 +76,7 @@ namespace ProjectMalnatiServer
                     textBoxIP.Text = addresses[i].ToString();
                 }
             }
-            //wewe
+            
             //label_ip_local.Foreground = Brushes.Green;
             label_ip_local.FontSize = 18;
             label_ip_local.FontWeight = FontWeights.Medium;
@@ -119,15 +123,41 @@ namespace ProjectMalnatiServer
             //if (this.connesso == false)
             {
                 //this.buttonListen.IsEnabled = false;
-                myEP = new IPEndPoint(IPAddress.Parse(this.textBoxIP.Text), Convert.ToInt16(this.textBoxPort.Text));
-                this.buttonListen.Content = "Cancel";
-                this.listeningTextBlock.Text = "Listening...";
-                this.textBoxIP.IsEnabled = false;
-                this.textBoxPort.IsEnabled = false;
-                this.textBoxPassword.IsEnabled = false;
-                this.pass = this.textBoxPassword.Password;
-                workerThreadConnection = new Thread(connetti);
-                workerThreadConnection.Start();
+                IPAddress address;
+                Int16 port;
+
+                if (!IPAddress.TryParse(this.textBoxIP.Text, out address))
+                {
+                    isValidIp = false;
+                    MessageBox.Show("IP non valido o mancante");
+                }
+
+                if (!Int16.TryParse(this.textBoxPort.Text, out port))
+                {
+                    isValidPorta = false;
+                    MessageBox.Show("Porta non valida o mancante");
+                }
+
+                if (this.textBoxPassword.Password.Length==0)
+                {
+                    isValidPass = false;
+                    MessageBox.Show("Password mancante");
+                }
+
+                if (isValidPass == true && isValidPorta == true && isValidIp == true)
+                {
+
+                    myEP = new IPEndPoint(IPAddress.Parse(this.textBoxIP.Text), Convert.ToInt16(this.textBoxPort.Text));
+                    this.buttonListen.Content = "Cancel";
+                    this.listeningTextBlock.Text = "Listening...";
+                    this.textBoxIP.IsEnabled = false;
+                    this.textBoxPort.IsEnabled = false;
+                    this.textBoxPassword.IsEnabled = false;
+                    this.pass = this.textBoxPassword.Password;
+                    workerThreadConnection = new Thread(connetti);
+                    workerThreadConnection.Start();
+                }
+                
             }
             else
             // else if(this.connesso == true && this.buttonListen.Content == "Cancel")
@@ -291,6 +321,32 @@ namespace ProjectMalnatiServer
                     Action mouseRightDownOrUp = () => { Win32.mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, (uint)p.x, (uint)p.y, 0, 0); };
                     dispatcher.Invoke(mouseRightDownOrUp);
                     continue;
+                }
+
+                if (ch == 'h')
+                {
+
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_H);
+                }
+                if (ch == 'e')
+                {
+
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_H);
+                }
+                if (ch == 'l')
+                {
+
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_H);
+                }
+                if (ch == 'l')
+                {
+
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_H);
+                }
+                if (ch == 'o')
+                {
+
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_H);
                 }
 
                 if (ch != '?' && ch != ';')
