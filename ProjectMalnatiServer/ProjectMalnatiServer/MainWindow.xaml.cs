@@ -325,28 +325,23 @@ namespace ProjectMalnatiServer
 
                 if (ch == 'h')
                 {
-
+                    Console.WriteLine("H");
                     InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_H);
                 }
                 if (ch == 'e')
                 {
-
-                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_H);
+                    Console.WriteLine("E");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_E);
                 }
                 if (ch == 'l')
                 {
-
-                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_H);
-                }
-                if (ch == 'l')
-                {
-
-                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_H);
+                    Console.WriteLine("L");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_L);
                 }
                 if (ch == 'o')
                 {
-
-                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_H);
+                    Console.WriteLine("O");
+                    InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_O);
                 }
 
                 if (ch != '?' && ch != ';')
