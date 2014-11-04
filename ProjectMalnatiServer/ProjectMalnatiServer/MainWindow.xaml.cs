@@ -306,26 +306,26 @@ namespace ProjectMalnatiServer
                 if (ch == '\0')
                     return;
 
-                if (ch == 'U')
-                {
-                    Action mouseLeftDownOrUp = () => { Win32.mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, (uint)p.x, (uint)p.y, 0, 0); };
-                    dispatcher.Invoke(mouseLeftDownOrUp);
-                    continue;
-                }
+                //if (ch == 'U')
+                //{
+                //    Action mouseLeftDownOrUp = () => { Win32.mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, (uint)p.x, (uint)p.y, 0, 0); };
+                //    dispatcher.Invoke(mouseLeftDownOrUp);
+                //    continue;
+                //}
 
-                if (ch == 'D')
-                {
-                    Action mouseLeftDown = () => { Win32.mouse_event(MOUSEEVENTF_LEFTDOWN, (uint)p.x, (uint)p.y, 0, 0); };
-                    dispatcher.Invoke(mouseLeftDown);
-                    continue;
-                }
+                //if (ch == 'D')
+                //{
+                //    Action mouseLeftDown = () => { Win32.mouse_event(MOUSEEVENTF_LEFTDOWN, (uint)p.x, (uint)p.y, 0, 0); };
+                //    dispatcher.Invoke(mouseLeftDown);
+                //    continue;
+                //}
 
-                if (ch == 'R')
-                {
-                    Action mouseRightDownOrUp = () => { Win32.mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, (uint)p.x, (uint)p.y, 0, 0); };
-                    dispatcher.Invoke(mouseRightDownOrUp);
-                    continue;
-                }
+                //if (ch == 'R')
+                //{
+                //    Action mouseRightDownOrUp = () => { Win32.mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, (uint)p.x, (uint)p.y, 0, 0); };
+                //    dispatcher.Invoke(mouseRightDownOrUp);
+                //    continue;
+                //}
 
                 if (ch != '?' && ch != ';' && ch!= '-')
                 {
