@@ -300,32 +300,41 @@ namespace ProjectMalnatiServer
             String car = null;
             bool isChar=false;
             int count = 0;
-            
+               
+
             foreach (char ch in bufferString)
             {
                 if (ch == '\0')
                     return;
 
-                //if (ch == 'U')
-                //{
-                //    Action mouseLeftDownOrUp = () => { Win32.mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, (uint)p.x, (uint)p.y, 0, 0); };
-                //    dispatcher.Invoke(mouseLeftDownOrUp);
-                //    continue;
-                //}
+                if (ch == 'U')
+                {
+                    //Action mouseLeftDownOrUp = () => { Win32.mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, (uint)p.x, (uint)p.y, 0, 0); };
+                    Action mouseLeftDownOrUp = () => { Win32.mouse_event(MOUSEEVENTF_LEFTUP, (uint)p.x, (uint)p.y, 0, 0); };
 
-                //if (ch == 'D')
-                //{
-                //    Action mouseLeftDown = () => { Win32.mouse_event(MOUSEEVENTF_LEFTDOWN, (uint)p.x, (uint)p.y, 0, 0); };
-                //    dispatcher.Invoke(mouseLeftDown);
-                //    continue;
-                //}
+                    dispatcher.Invoke(mouseLeftDownOrUp);
+                    continue;
+                }
 
-                //if (ch == 'R')
-                //{
-                //    Action mouseRightDownOrUp = () => { Win32.mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, (uint)p.x, (uint)p.y, 0, 0); };
-                //    dispatcher.Invoke(mouseRightDownOrUp);
-                //    continue;
-                //}
+                if (ch == 'D')
+                {
+                    Action mouseLeftDown = () => { Win32.mouse_event(MOUSEEVENTF_LEFTDOWN, (uint)p.x, (uint)p.y, 0, 0); };
+                    //Action mouseLeftDown = () =>
+                    //{
+                    //    Win32.mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, (uint)p.x, (uint)p.y, 0, 0);
+                    //Thread.Sleep(150);
+                    //Win32.mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, (uint)p.x, (uint)p.y, 0, 0);
+                    //};
+                    dispatcher.Invoke(mouseLeftDown);
+                    continue;
+                }
+                
+                if (ch == 'R')
+                {
+                    Action mouseRightDownOrUp = () => { Win32.mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, (uint)p.x, (uint)p.y, 0, 0); };
+                    dispatcher.Invoke(mouseRightDownOrUp);
+                    continue;
+                }
 
                 if (ch != '?' && ch != ';' && ch!= '-')
                 {
@@ -333,721 +342,813 @@ namespace ProjectMalnatiServer
                     {
                         car+= ch;
                         count++;
-                        if (count == 2) {
+                        if (count == 2)
+                        {
                             count = 0;
-                          
-                            
+
+
                             /*_____________________________________________________________*/
 
+                            //Key k = KeyInterop.KeyFromVirtualKey(Convert.ToInt16(car));
+                            //Console.WriteLine(k.ToString());
 
-                            if (car == "1")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.LBUTTON);
-                            }
 
-                            if (car == "2")
+                            //InputSimulator.SimulateKeyPress(vk);
+                            switch (car)
                             {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.RBUTTON);
-                            }
-                            if (car == "3")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.CANCEL);
-                            }
-                            if (car == "4")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.MBUTTON);
-                            }
-                            if (car == "5")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.XBUTTON1);
-                            }
-                            if (car == "6")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.XBUTTON2);
-                            }
-                            if (car == "8")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.BACK);
-                            }
-                            if (car == "9")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.TAB);
-                            }
+                                case "1":
+                                    InputSimulator.SimulateKeyPress(VirtualKeyCode.LBUTTON);
+                                    break;
 
-                            if (car == "C")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.CLEAR);
-                            }
-                            if (car == "D")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.RETURN);
-                            }
-                            if (car == "10")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.SHIFT);
-                            }
-                            if (car == "11")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.CONTROL);
-                            }
-                            if (car == "12")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.MENU);
-                            }
-                            if (car == "13")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.PAUSE);
-                            }
-                            if (car == "14")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.CAPITAL);
-                            }
-                            if (car == "15")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.KANA);
-                            }
-                            if (car == "15")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.HANGEUL);
-                            }
-                            if (car == "17")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.JUNJA);
-                            }
-                            if (car == "18")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.FINAL);
-                            }
+                                case "2":
+                                    
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.RBUTTON);
+                                        break;
+                                    
+                                    //if (car == "3")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.CANCEL);
+                                    //}
+                                    //if (car == "4")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.MBUTTON);
+                                    //}
+                                    //if (car == "5")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.XBUTTON1);
+                                    //}
+                                    //if (car == "6")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.XBUTTON2);
+                                    //}
+                                case "8":
+                                        
+                                            InputSimulator.SimulateKeyPress(VirtualKeyCode.BACK);
+                                            break;
+                                    //if (car == "9")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.TAB);
+                                    //}
 
-                            if (car == "19")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.HANJA);
-                            }
-                            if (car == "19")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.KANJI);
-                            }
-                            if (car == "1B")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.ESCAPE);
-                            }
-                            if (car == "1C")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.CONVERT);
-                            }
-                            if (car == "1D")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.NONCONVERT);
-                            }
-                            if (car == "1E")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.ACCEPT);
-                            }
-                            if (car == "1F")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.MODECHANGE);
-                            }
-                            if (car == "20")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.SPACE);
-                            }
+                                    //if (car == "C")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.CLEAR);
+                                    //}
+                                        case "D":
+                                            InputSimulator.SimulateKeyPress(VirtualKeyCode.RETURN);
+                                            break;
+                                    //if (car == "10")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.SHIFT);
+                                    //}
+                                    //if (car == "11")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.CONTROL);
+                                    //}
+                                    //if (car == "12")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.MENU);
+                                    //}
+                                    //if (car == "13")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.PAUSE);
+                                    //}
+                                case "14":
+                                            InputSimulator.SimulateKeyPress(VirtualKeyCode.CAPITAL);
+                                            break;
+                                    //if (car == "15")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.KANA);
+                                    //}
+                                    //if (car == "15")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.HANGEUL);
+                                    //}
+                                    //if (car == "17")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.JUNJA);
+                                    //}
+                                    //if (car == "18")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.FINAL);
+                                    //}
 
-                            if (car == "21")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.PRIOR);
-                            }
-                            if (car == "22")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.NEXT);
-                            }
-                            if (car == "23")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.END);
-                            }
-                            if (car == "24")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.HOME);
-                            }
-                            if (car == "25")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.LEFT);
-                            }
-                            if (car == "26")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.UP);
-                            }
-                            if (car == "27")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.RIGHT);
-                            }
-                            if (car == "28")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.DOWN);
-                            }
-                            if (car == "29")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.SELECT);
-                            }
-                            if (car == "2A")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.PRINT);
-                            }
-                            if (car == "2B")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.EXECUTE);
-                            }
+                                    //if (car == "19")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.HANJA);
+                                    //}
+                                    //if (car == "19")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.KANJI);
+                                    //}
+                                    //if (car == "1B")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.ESCAPE);
+                                    //}
+                                    //if (car == "1C")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.CONVERT);
+                                    //}
+                                    //if (car == "1D")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.NONCONVERT);
+                                    //}
+                                    //if (car == "1E")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.ACCEPT);
+                                    //}
+                                    //if (car == "1F")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.MODECHANGE);
+                                    //}
+                                            case "20":
+                                                InputSimulator.SimulateKeyPress(VirtualKeyCode.SPACE);
+                                                break;
 
-                            if (car == "2C")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.SNAPSHOT);
-                            }
-                            if (car == "2D")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.INSERT);
-                            }
-                            if (car == "2E")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.DELETE);
-                            }
-                            if (car == "2F")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.HELP);
-                            }
-                            if (car == "30")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_0);
-                            }
-                            if (car == "31")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_1);
-                            }
-                            if (car == "32")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_2);
-                            }
-                            if (car == "33")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_3);
-                            }
-                            if (car == "34")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_4);
-                            }
-                            if (car == "35")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_5);
-                            }
-                            if (car == "36")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_6);
-                            }
-                            if (car == "37")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_7);
-                            }
-                            if (car == "38")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_8);
-                            }
-                            if (car == "39")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_9);
-                            }
-                            if (car == "41")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_A);
-                            }
-                            if (car == "42")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_B);
-                            }
-                            if (car == "43")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_C);
-                            }
-                            if (car == "44")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_D);
-                            }
-                            if (car == "45")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_E);
-                            }
-                            if (car == "46")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_F);
-                            }
-                            if (car == "47")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_G);
-                            }
-                            if (car == "48")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_H);
-                            }
-                            if (car == "49")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_I);
-                            }
-                            if (car == "4A")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_J);
-                            }
-                            if (car == "4B")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_K);
-                            }
-                            if (car == "4C")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_L);
-                            }
-                            if (car == "4D")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_M);
-                            }
-                            if (car == "4E")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_N);
-                            }
-                            if (car == "4F")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_O);
-                            }
-                            if (car == "50")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_P);
-                            }
-                            if (car == "51")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_Q);
-                            }
-                            if (car == "52")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_R);
-                            }
-                            if (car == "53")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_S);
-                            }
-                            if (car == "54")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_T);
-                            }
-                            if (car == "55")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_U);
-                            }
-                            if (car == "56")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_V);
-                            }
-                            if (car == "57")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_W);
-                            }
-                            if (car == "58")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_X);
-                            }
-                            if (car == "59")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_Y);
-                            }
-                            if (car == "5A")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_Z);
-                            }
-                            if (car == "5B")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.LWIN);
-                            }
-                            if (car == "5C")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.RWIN);
-                            }
-                            if (car == "5D")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.APPS);
-                            }
-                            if (car == "5F")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.SLEEP);
-                            }
-                            if (car == "60")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD0);
-                            }
-                            if (car == "61")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD1);
-                            }
-                            if (car == "62")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD2);
-                            }
-                            if (car == "63")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD3);
-                            }
-                            if (car == "64")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD4);
-                            }
-                            if (car == "65")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD5);
-                            }
-                            if (car == "66")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD6);
-                            }
-                            if (car == "67")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD7);
-                            }
-                            if (car == "68")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD8);
-                            }
+                                    //if (car == "21")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.PRIOR);
+                                    //}
+                                    //if (car == "22")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.NEXT);
+                                    //}
+                                    //if (car == "23")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.END);
+                                    //}
+                                    //if (car == "24")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.HOME);
+                                    //}
+                                    //if (car == "25")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.LEFT);
+                                    //}
+                                    //if (car == "26")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.UP);
+                                    //}
+                                    //if (car == "27")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.RIGHT);
+                                    //}
+                                    //if (car == "28")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.DOWN);
+                                    //}
+                                    //if (car == "29")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.SELECT);
+                                    //}
+                                    //if (car == "2A")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.PRINT);
+                                    //}
+                                    //if (car == "2B")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.EXECUTE);
+                                    //}
 
-                            if (car == "69")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD9);
-                            }
-                            if (car == "6A")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.MULTIPLY);
-                            }
-                            if (car == "6B")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.ADD);
-                            }
-                            if (car == "6C")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.SEPARATOR);
-                            }
-                            if (car == "6D")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.SUBTRACT);
-                            }
-                            if (car == "6F")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.DIVIDE);
-                            }
-                            if (car == "70")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F1);
-                            }
-                            if (car == "71")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F2);
-                            }
-                            if (car == "72")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F3);
-                            }
-                            if (car == "73")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F4);
-                            }
-                            if (car == "74")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F5);
-                            }
-                            if (car == "75")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F6);
-                            }
-                            if (car == "76")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F7);
-                            }
-                            if (car == "77")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F8);
-                            }
-                            if (car == "78")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F9);
-                            }
-                            if (car == "79")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F10);
-                            }
-                            if (car == "7A")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F11);
-                            }
-                            if (car == "7B")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F12);
-                            }
-                            if (car == "7C")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F13);
-                            }
-                            if (car == "7D")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F14);
-                            }
-                            if (car == "7E")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F15);
-                            }
-                            if (car == "7F")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F16);
-                            }
-                            if (car == "80")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F17);
-                            }
-                            if (car == "81")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F18);
-                            }
-                            if (car == "82")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F19);
-                            }
-                            if (car == "83")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F20);
-                            }
-                            if (car == "84")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F21);
-                            }
-                            if (car == "85")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F23);
-                            }
-                            if (car == "86")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F23);
-                            }
-                            if (car == "87")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.F24);
-                            }
-                            if (car == "90")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMLOCK);
-                            }
-                            if (car == "91")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.SCROLL);
-                            }
-                            if (car == "92")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_1);
-                            }
-                            if (car == "93")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_2);
-                            }
-                            if (car == "94")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_3);
-                            }
-                            if (car == "95")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_4);
-                            }
-                            if (car == "96")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_5);
-                            }
-                            if (car == "A0")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.LSHIFT);
-                            }
-                            if (car == "A1")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.RSHIFT);
-                            }
-                            if (car == "A2")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.LCONTROL);
-                            }
-                            if (car == "A3")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.RCONTROL);
-                            }
-                            if (car == "A4")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.LMENU);
-                            }
-                            if (car == "A5")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.RMENU);
-                            }
-                            if (car == "A6")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.BROWSER_BACK);
-                            }
-                            if (car == "A7")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.BROWSER_FORWARD);
-                            }
-                            if (car == "A8")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.BROWSER_REFRESH);
-                            }
-                            if (car == "A9")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.BROWSER_STOP);
-                            }
-                            if (car == "AA")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.BROWSER_SEARCH);
-                            }
-                            if (car == "AB")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.BROWSER_FAVORITES);
-                            }
-                            if (car == "AC")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.BROWSER_HOME);
-                            }
-                            if (car == "AD")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VOLUME_MUTE);
-                            }
-                            if (car == "AE")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VOLUME_DOWN);
-                            }
-                            if (car == "AF")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.VOLUME_UP);
-                            }
-                            if (car == "B0")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.MEDIA_NEXT_TRACK);
-                            }
-                            if (car == "B1")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.MEDIA_PREV_TRACK);
-                            }
-                            if (car == "B2")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.MEDIA_STOP);
-                            }
-                            if (car == "B3")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.MEDIA_PLAY_PAUSE);
-                            }
-                            if (car == "B5")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.LAUNCH_MEDIA_SELECT);
-                            }
-                            if (car == "B6")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.LAUNCH_APP1);
-                            }
-                            if (car == "B7")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.LAUNCH_APP2);
-                            }
-                            if (car == "BA")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_1);
-                            }
-                            if (car == "BB")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_PLUS);
-                            }
-                            if (car == "BC")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_COMMA);
-                            }
-                            if (car == "BD")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_MINUS);
-                            }
-                            if (car == "BE")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_PERIOD);
-                            }
-                            if (car == "BF")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_2);
-                            }
-                            if (car == "C0")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_3);
-                            }
-                            if (car == "DB")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_4);
-                            }
-                            if (car == "DC")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_5);
-                            }
-                            if (car == "DD")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_6);
-                            }
-                            if (car == "DE")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_7);
-                            }
-                            if (car == "DF")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_8);
-                            }
-                            if (car == "E2")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_102);
-                            }
-                            if (car == "E5")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.PROCESSKEY);
-                            }
-                            if (car == "E7")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.PACKET);
-                            }
-                            if (car == "F6")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.ATTN);
-                            }
-                            if (car == "F7")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.CRSEL);
-                            }
-                            if (car == "F8")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.EXSEL);
-                            }
-                            if (car == "F9")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.EREOF);
-                            }
-                            if (car == "FA")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.PLAY);
-                            }
-                            if (car == "FB")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.ZOOM);
-                            }
-                            if (car == "FC")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.NONAME);
-                            }
-                            if (car == "FD")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.PA1);
-                            }
-                            if (car == "FE")
-                            {
-                                InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_CLEAR);
-                            }
-                                                    }
-                        continue;
+                                    //if (car == "2C")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.SNAPSHOT);
+                                    //}
+                                    //if (car == "2D")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.INSERT);
+                                    //}
+                                    //if (car == "2E")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.DELETE);
+                                    //}
+                                    //if (car == "2F")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.HELP);
+                                    //}
+                                case "30":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_0);
+                                        break;
+
+                                case "31":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_1);
+                                        break;
+                                case "32":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_2);
+                                        break;
+                                case "33":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_3);
+                                        break;
+                                case "34":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_4);
+                                        break;
+                                case "35":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_5);
+                                        break;
+                                case "36":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_6);
+                                        break;
+                                case "37":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_7);
+                                        break;
+                                case "38":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_8);
+                                        break;
+                                case "39":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_9);
+                                        break;
+                                case "41":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_A);
+                                        break;
+                                case "42":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_B);
+                                        break;
+                                case "43":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_C);
+                                        break;
+                                case "44":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_D);
+                                        break;
+                                case "45":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_E);
+                                        break;
+                                case "46":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_F);
+                                        break;
+                                case "47":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_G);
+                                        break;
+                                case "48":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_H);
+                                        break;
+                                case "49":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_I);
+                                        break;
+                                case "4A":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_J);
+                                        break;
+                                case "4B":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_K);
+                                        break;
+                                case "4C":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_L);
+                                        break;
+                                case "4D":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_M);
+                                        break;
+                                case "4E":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_N);
+                                        break;
+                                case "4F":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_O);
+                                        break;
+                                case "50":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_P);
+                                        break;
+                                case "51":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_Q);
+                                        break;
+                                case "52":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_R);
+                                        break;
+                                case "53":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_S);
+                                        break;
+                                case "54":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_T);
+                                        break;
+                                case "55":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_U);
+                                        break;
+                                case "56":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_V);
+                                        break;
+                                case "57":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_W);
+                                        break;
+                                case "58":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_X);
+                                        break;
+                                case "59":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_Y);
+                                        break;
+                                case "5A":
+                                        InputSimulator.SimulateKeyPress(VirtualKeyCode.VK_Z);
+                                        break;
+                                    //if (car == "5B")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.LWIN);
+                                    //}
+                                    //if (car == "5C")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.RWIN);
+                                    //}
+                                    //if (car == "5D")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.APPS);
+                                    //}
+                                    //if (car == "5F")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.SLEEP);
+                                    //}
+                                    //if (car == "60")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD0);
+                                    //}
+                                    //if (car == "61")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD1);
+                                    //}
+                                    //if (car == "62")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD2);
+                                    //}
+                                    //if (car == "63")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD3);
+                                    //}
+                                    //if (car == "64")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD4);
+                                    //}
+                                    //if (car == "65")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD5);
+                                    //}
+                                    //if (car == "66")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD6);
+                                    //}
+                                    //if (car == "67")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD7);
+                                    //}
+                                    //if (car == "68")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD8);
+                                    //}
+
+                                    //if (car == "69")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMPAD9);
+                                    //}
+                                    //if (car == "6A")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.MULTIPLY);
+                                    //}
+                                    //if (car == "6B")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.ADD);
+                                    //    continue;
+                                    //}
+                                    //if (car == "6C")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.SEPARATOR);
+                                    //    continue;
+                                    //}
+                                    //if (car == "6D")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.SUBTRACT);
+                                    //    continue;
+                                    //}
+                                    //if (car == "6F")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.DIVIDE);
+                                    //    continue;
+                                    //}
+                                    //if (car == "70")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F1);
+                                    //    continue;
+                                    //}
+                                    //if (car == "71")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F2);
+                                    //    continue;
+                                    //}
+                                    //if (car == "72")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F3);
+                                    //    continue;
+                                    //}
+                                    //if (car == "73")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F4);
+                                    //    continue;
+                                    //}
+                                    //if (car == "74")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F5);
+                                    //    continue;
+                                    //}
+                                    //if (car == "75")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F6);
+                                    //    continue;
+                                    //}
+                                    //if (car == "76")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F7);
+                                    //    continue;
+                                    //}
+                                    //if (car == "77")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F8);
+                                    //    continue;
+                                    //}
+                                    //if (car == "78")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F9);
+                                    //    continue;
+                                    //}
+                                    //if (car == "79")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F10);
+                                    //    continue;
+                                    //}
+                                    //if (car == "7A")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F11);
+                                    //    continue;
+                                    //}
+                                    //if (car == "7B")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F12);
+                                    //    continue;
+                                    //}
+                                    //if (car == "7C")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F13);
+                                    //    continue;
+                                    //}
+                                    //if (car == "7D")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F14);
+                                    //    continue;
+                                    //}
+                                    //if (car == "7E")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F15);
+                                    //    continue;
+                                    //}
+                                    //if (car == "7F")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F16);
+                                    //    continue;
+                                    //}
+                                    //if (car == "80")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F17);
+                                    //    continue;
+                                    //}
+                                    //if (car == "81")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F18);
+                                    //    continue;
+                                    //}
+                                    //if (car == "82")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F19);
+                                    //    continue;
+                                    //}
+                                    //if (car == "83")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F20);
+                                    //    continue;
+                                    //}
+                                    //if (car == "84")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F21);
+                                    //    continue;
+                                    //}
+                                    //if (car == "85")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F23);
+                                    //    continue;
+                                    //}
+                                    //if (car == "86")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F23);
+                                    //    continue;
+                                    //}
+                                    //if (car == "87")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.F24);
+                                    //    continue;
+                                    //}
+                                    //if (car == "90")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.NUMLOCK);
+                                    //    continue;
+                                    //}
+                                    //if (car == "91")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.SCROLL);
+                                    //    continue;
+                                    //}
+                                    //if (car == "92")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_1);
+                                    //    continue;
+                                    //}
+                                    //if (car == "93")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_2);
+                                    //    continue;
+                                    //}
+                                    //if (car == "94")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_3);
+                                    //    continue;
+                                    //}
+                                    //if (car == "95")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_4);
+                                    //    continue;
+                                    //}
+                                    //if (car == "96")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_5);
+                                    //    continue;
+                                    //}
+                                    //if (car == "A0")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.LSHIFT);
+                                    //    continue;
+                                    //}
+                                    //if (car == "A1")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.RSHIFT);
+                                    //    continue;
+                                    //}
+                                    //if (car == "A2")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.LCONTROL);
+                                    //    continue;
+                                    //}
+                                    //if (car == "A3")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.RCONTROL);
+                                    //    continue;
+                                    //}
+                                    //if (car == "A4")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.LMENU);
+                                    //    continue;
+                                    //}
+                                    //if (car == "A5")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.RMENU);
+                                    //    continue;
+                                    //}
+                                    //if (car == "A6")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.BROWSER_BACK);
+                                    //    continue;
+                                    //}
+                                    //if (car == "A7")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.BROWSER_FORWARD);
+                                    //    continue;
+
+                                    //}
+                                    //if (car == "A8")
+                                    //{
+                                    //    InputSimulator.SimulateKeyPress(VirtualKeyCode.BROWSER_REFRESH);
+                                    //    continue;
+
+                                    //    if (car == "A9")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.BROWSER_STOP);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "AA")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.BROWSER_SEARCH);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "AB")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.BROWSER_FAVORITES);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "AC")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.BROWSER_HOME);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "AD")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.VOLUME_MUTE);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "AE")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.VOLUME_DOWN);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "AF")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.VOLUME_UP);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "B0")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.MEDIA_NEXT_TRACK);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "B1")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.MEDIA_PREV_TRACK);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "B2")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.MEDIA_STOP);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "B3")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.MEDIA_PLAY_PAUSE);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "B5")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.LAUNCH_MEDIA_SELECT);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "B6")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.LAUNCH_APP1);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "B7")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.LAUNCH_APP2);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "BA")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_1);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "BB")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_PLUS);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "BC")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_COMMA);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "BD")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_MINUS);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "BE")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_PERIOD);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "BF")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_2);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "C0")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_3);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "DB")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_4);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "DC")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_5);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "DD")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_6);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "DE")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_7);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "DF")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_8);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "E2")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_102);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "E5")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.PROCESSKEY);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "E7")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.PACKET);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "F6")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.ATTN);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "F7")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.CRSEL);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "F8")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.EXSEL);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "F9")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.EREOF);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "FA")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.PLAY);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "FB")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.ZOOM);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "FC")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.NONAME);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "FD")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.PA1);
+                                    //        continue;
+
+                                    //    }
+                                    //    if (car == "FE")
+                                    //    {
+                                    //        InputSimulator.SimulateKeyPress(VirtualKeyCode.OEM_CLEAR);
+                                    //        continue;
+
+                                    //    }
+                                   // }
+                            }
+                            continue;
+                        }
                     }
                     else
                     {
