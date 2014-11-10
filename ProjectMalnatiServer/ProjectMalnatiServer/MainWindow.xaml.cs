@@ -56,6 +56,8 @@ namespace ProjectMalnatiServer
         bool isValidPorta = true;
         bool isValidPass = true;
 
+        FtpServer ftpServer;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -114,6 +116,7 @@ namespace ProjectMalnatiServer
 
         }
 
+        //button listen method
         private void listenSocket(object sender, RoutedEventArgs e)
         {
             //il bottone può fare due cose, connettere o disconnettere, occorre distinguere 
@@ -270,14 +273,22 @@ namespace ProjectMalnatiServer
                 if (!_shouldStop)
                 {
                     //connessione valida stabilita
+
+                    //provo a creare anche la connessione del server ftp
                     IPEndPoint remoteEndPoint = (IPEndPoint)acceptedSocket.RemoteEndPoint;
+                    ftpServer = new FtpServer();
+                    //ftpServer.Start(remoteEndPoint.Address);
+                    ftpServer.Start();
+
                     Console.WriteLine("Accepted connection from {0}:{1}.", remoteEndPoint.Address, remoteEndPoint.Port);
                     dispatcher.Invoke(pc);
                     return;
                 }
+
                 if (listener.Connected == true) //se ho stabilito una connessione ma poi ho chiuso il programma
                     listener.Shutdown(SocketShutdown.Both);
                 listener.Close();
+
                 Console.WriteLine("Il thread connetti sta per terminare\n");
                 return;
             }
@@ -292,8 +303,6 @@ namespace ProjectMalnatiServer
             catch (System.OverflowException) { Console.WriteLine("Errore!"); }
             catch (Exception ex) { Console.WriteLine(ex.ToString()); }
         }
-
-        
 
         private void parseFunction(string bufferString)
         {
