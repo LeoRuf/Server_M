@@ -44,6 +44,7 @@ namespace ProjectMalnatiServer
 
         private string fileName;
         private string fileExtension;
+        long size;
         /********************************/
 
         volatile bool _shouldStop;
@@ -215,6 +216,7 @@ namespace ProjectMalnatiServer
                 string path;
                 FileInfo fInfo;
                 string[] extensionArray = null;
+                
 
                 if (pathObject != null)
                 {
@@ -228,6 +230,8 @@ namespace ProjectMalnatiServer
                     {
                         path = CompressAndSend(path);
                         FileInfo modifiedfInfo = new FileInfo(path);
+                        size = modifiedfInfo.Length;
+                        Console.WriteLine("Dimensione file " +modifiedfInfo.Length);
                         fileName = modifiedfInfo.Name;
                         dirOrFile = "dir;" + fileName;
                     }
@@ -235,6 +239,7 @@ namespace ProjectMalnatiServer
                     {
                         fileExtension = extensionArray[1];
                         dirOrFile = fileName;
+                        size = fInfo.Length;
                     }
                     
                     using (NetworkStream dataStream = _dataClient.GetStream())
@@ -250,6 +255,9 @@ namespace ProjectMalnatiServer
                         dataCtrlStreamW.Flush();
 
                         string answer = dataCtrlStreamR.ReadLine();
+                        dataCtrlStreamW.WriteLine(size);
+                        dataCtrlStreamW.Flush();
+                        answer = dataCtrlStreamR.ReadLine();
 
                         using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
                         {
@@ -318,6 +326,7 @@ namespace ProjectMalnatiServer
                         }
                     }
                 }
+
             }
             catch (Exception)
             {

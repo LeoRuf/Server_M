@@ -38,7 +38,7 @@
       <HintPath>InputSimulator.0.1.0.0-bin\Debug\InputSimulator.dll</HintPath>
     </Reference>
     <Reference Include="Ionic.Zip">
-      <HintPath>..\..\..\DotNetZipLib-DevKit-v1.9\zip-v1.9\Debug\Ionic.Zip.dll</HintPath>
+      <HintPath>DotNetZip\zip-v1.9\Debug\Ionic.Zip.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
