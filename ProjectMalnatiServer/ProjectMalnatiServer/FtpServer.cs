@@ -7,12 +7,16 @@ using System.Net.Sockets;
 using System.Net;
 using System.Threading;
 
+
+
 namespace ProjectMalnatiServer
 {
    
         public class FtpServer
         {
             private TcpListener _listener;
+
+            private ClientConnection connection;
 
             public FtpServer()
             {
@@ -23,9 +27,17 @@ namespace ProjectMalnatiServer
 
             {
                 //_listener = new TcpListener(ipClient, 21);
-                _listener = new TcpListener(IPAddress.Any, 21);
-                _listener.Start();
-                _listener.BeginAcceptTcpClient(HandleAcceptTcpClient, _listener);
+                try
+                {
+                    _listener = new TcpListener(IPAddress.Any, 21);
+                    _listener.Start();
+                    _listener.BeginAcceptTcpClient(HandleAcceptTcpClient, _listener);
+                }
+                catch(Exception)
+                {
+                    if (_listener != null)
+                        _listener.Stop();
+                }    
             }
 
             public void Stop()
@@ -39,13 +51,26 @@ namespace ProjectMalnatiServer
             private void HandleAcceptTcpClient(IAsyncResult result)
             {
                 //_listener.BeginAcceptTcpClient(HandleAcceptTcpClient, _listener);
-                TcpClient client = _listener.EndAcceptTcpClient(result);
-                //_listener.Stop();
-                Console.WriteLine("connessione impostata con il client: " + client.Client.LocalEndPoint.ToString());
-                ClientConnection connection = new ClientConnection(client);
-
-                ThreadPool.QueueUserWorkItem(connection.HandleClient, client);
+                TcpClient client=null;
+                try
+                {
+                    client = _listener.EndAcceptTcpClient(result);
+                    _listener.Stop();
+                    Console.WriteLine("connessione impostata con il client: " + client.Client.LocalEndPoint.ToString());
+                    connection = new ClientConnection(client);
+                    ThreadPool.QueueUserWorkItem(connection.HandleClient, client);
+                }
+               catch(Exception)
+                {
+                    if (client != null)
+                        if (client.Connected == true)
+                        client.Close(); 
+                }
             }
 
+            public void disconnectClientConnection()
+            {
+                connection.Disconnetti();
+            }
         }
 }

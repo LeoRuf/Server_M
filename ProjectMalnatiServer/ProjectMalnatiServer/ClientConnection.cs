@@ -21,6 +21,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Drawing;
 using System.Threading;
+using System.IO.Compression;
+using Ionic.Zip;
 
 namespace ProjectMalnatiServer
 {
@@ -34,24 +36,33 @@ namespace ProjectMalnatiServer
         private StreamReader _controlReader;
         private StreamWriter _controlWriter;
 
-
         /****************************/
         //attributi connessione DATA
         private string _transferType;
         private TcpClient _dataClient;
         private IPEndPoint _dataEndpoint;
+
+        private string fileName;
+        private string fileExtension;
         /********************************/
 
-        private string _username;
+        volatile bool _shouldStop;
 
         public ClientConnection(TcpClient client)
         {
-            _controlClient = client;
+            try
+            {
+                _controlClient = client;
 
-            _controlStream = _controlClient.GetStream();
+                _controlStream = _controlClient.GetStream();
 
-            _controlReader = new StreamReader(_controlStream);
-            _controlWriter = new StreamWriter(_controlStream);
+                _controlReader = new StreamReader(_controlStream);
+                _controlWriter = new StreamWriter(_controlStream);
+            }
+            catch (Exception)
+            {
+                Disconnetti();
+            }
         }
 
         public void HandleClient(object obj)
@@ -59,12 +70,12 @@ namespace ProjectMalnatiServer
             _controlWriter.WriteLine("220 Service Ready.");
             _controlWriter.Flush();
 
+            _shouldStop = false;
             string line;
-
             try
             {
                 //continua a ricevere comandi dal client
-                while (true)
+                while (!_shouldStop)
                 {
                     while (!string.IsNullOrEmpty(line = _controlReader.ReadLine()))
                     {
@@ -84,29 +95,9 @@ namespace ProjectMalnatiServer
                         {
                             switch (cmd) //possibili comandi inviati via dal client sul canale di controllo, porta 21
                             {
-
-                                //case "USER": //inutile
-                                //    response = User(arguments);
-                                //    break;
-                                //case "PASS": //inutile
-                                //    response = Password(arguments);
-                                //    break;
-                                //case "CWD": //inutile
-                                //    response = ChangeWorkingDirectory(arguments);
-                                //    break;
-                                //case "CDUP": //inutilr
-                                //    response = ChangeWorkingDirectory("..");
-                                //    break;
-                                //case "PWD": //inutile
-                                //    response = "257 \"/\" is current directory.";
-                                //    break;
                                 case "QUIT":
                                     response = "221 Service closing control connection";
                                     break;
-                                //case "TYPE": //tipo di file che il client vuole scaricare
-                                //    string[] splitArgs = arguments.Split(' ');
-                                //    response = Type(splitArgs[0], splitArgs.Length > 1 ? splitArgs[1] : null);
-                                //    break;
                                 case "PORTA": //connessione attiva, non c'e' da attraversare un firewall o NAT
                                     response = Port(arguments);
                                     break;
@@ -131,87 +122,40 @@ namespace ProjectMalnatiServer
 
                             if (response.StartsWith("221"))
                             {
+                                _shouldStop = true;
+                                Disconnetti();
                                 break; //se il client chiama quit
                             }
                         }
                     }
+                    //if (_controlClient == null || !_controlClient.Connected)
+                    //{
+                    //    break; //se si chiama il metodo stop di tcpclient
+                    //}
                 }
             }
             catch (Exception ex)
             {
+                //l'eccezione e' scatenata solo dall'abbattimento brusco della connessione da parte del server
+                //quando e' il client a chiudere la connessione si passa mediante il metodo quit, i cui risultati
+                //sono uguali a quelli provocati dal blocco catch (abbattimento di tutte le connessioni)
                 Console.WriteLine(ex);
-                throw;
+                Disconnetti();
+                //throw;
             }
+        }
+        public void Disconnetti()
+        {
+            //chiudendo lo stream, il metodo handleClient va in eccezione, uscendo dai due cicli while
+            if (_controlStream != null)
+                _controlStream.Close();
+            if (_dataClient != null && _dataClient.Client != null && _dataClient.Connected == true)
+                _dataClient.Close();
+            if (_controlClient != null && _controlClient.Connected == true)
+                _controlClient.Close();
         }
 
         #region FTP Commands
-
-        ////USER
-        //private string User(string username) 
-        //{
-        //    _username = username;
-
-        //    return "331 Username ok, need password";
-        //}
-
-        ////PASS
-        //private string Password(string password)
-        //{
-        //    if (true)
-        //    {
-        //        return "230 User logged in";
-        //    }
-        //    else
-        //    {
-        //        return "530 Not logged in";
-        //    }
-        //}
-
-        ////CWD
-        //private string ChangeWorkingDirectory(string pathname)
-        //{
-        //    return "250 Changed to new directory";
-        //}
-
-        //TYPE
-        //private string Type(string typeCode, string formatControl)
-        //{
-        //    string response = "500 ERROR";
-
-        //    switch (typeCode)
-        //    {
-        //        case "A":
-        //            _transferType = typeCode;
-        //            response = "200 OK, ASCII file";
-        //            break;
-        //        case "I":
-        //            _transferType = typeCode;
-        //            response = "200 OK, Image file";
-        //            break;
-        //        case "E":
-        //        case "L":
-        //        default:
-        //            response = "504 Command not implemented for that parameter.";
-        //            break;
-        //    }
-
-        //    if (formatControl != null)
-        //    {
-        //        switch (formatControl)
-        //        {
-        //            case "N":
-        //                response = "200 OK";
-        //                break;
-        //            case "T":
-        //            case "C":
-        //            default:
-        //                response = "504 Command not implemented for that parameter.";
-        //                break;
-        //        }
-        //    }
-
-        //    return response;
-        //}
 
         //PORT: il comando porta permette al client di scegliere una porta da usare per il
         //canale DATA
@@ -219,16 +163,6 @@ namespace ProjectMalnatiServer
         {
             IPEndPoint ipep = (IPEndPoint)_controlClient.Client.RemoteEndPoint;
             IPAddress ipa = ipep.Address;
-
-            /*******************************/
-            //if (BitConverter.IsLittleEndian)
-            //    Array.Reverse(bytePortArray);
-
-            //short port=BitConverter.ToInt16(bytePortArray, 0);
-            /*********************************************/
-
-            //_dataEndpoint = new IPEndPoint(((IPEndPoint)_controlClient.Client.RemoteEndPoint).Address, 20);
-            //_dataEndpoint = new IPEndPoint(((IPEndPoint)_controlClient.Client.RemoteEndPoint).Address, port);
 
             short portshort = Convert.ToInt16(host);
             _dataEndpoint = new IPEndPoint(ipa, portshort);
@@ -239,138 +173,169 @@ namespace ProjectMalnatiServer
 
         private string Retrieve(string pathname)
         {
-            //in realta' qui' non devo inviare il file da una cartella ma 
-            //devo inviare un file il cui contenuto rispecchia la clipboard
-            //pathname qui' inutile, non devo specificare una directory scelta dal client
-
-            _dataClient = new TcpClient(); //creo la connessione 
-            _dataClient.BeginConnect(_dataEndpoint.Address, _dataEndpoint.Port, DoRetrieve, pathname);
-            return "Inizia il tentativo di connessione al client\n";
+            try
+            {
+                _dataClient = new TcpClient(); //creo la connessione 
+                _dataClient.BeginConnect(_dataEndpoint.Address, _dataEndpoint.Port, DoRetrieve, pathname);
+                return "Inizia il tentativo di connessione al client\n";
+            }
+            catch (Exception)
+            {
+                Disconnetti();
+                return "Connessione ftp caduta!!!";
+            }
         }
 
         private void DoRetrieve(IAsyncResult result)
         {
-            //provo ad inviare un file predefinito, nella cartella dei files delle classi di VS
-            //Console.WriteLine("Connessione dati stabilita\n");
-
-            _dataClient.EndConnect(result); //modalita' attiva
-            //NetworkStream dataStream = _dataClient.GetStream();
-            //StreamReader clientReader = new StreamReader(dataStream);
-            //string risposta = clientReader.ReadLine();
-            //Console.WriteLine("Risposta: " + risposta);
-            //StreamWriter clientWriter = new StreamWriter(dataStream);
-            //clientWriter.WriteLine("daje");
-            //clientWriter.Flush();
-
-            //clipboard operations
-            /*
-             * 
-             * 
-             * 
-             * *
-             * *
-             * *
-             */
-            ////
-
-
-            //object fi=null;
-
-            object pathObject = null; // Used to store the return value
-            var thread = new Thread(
-              () =>
-              {
-                  IDataObject dataObject = Clipboard.GetDataObject();
-                  if (Clipboard.ContainsFileDropList())
-                  {
-                      StringCollection strColl = Clipboard.GetFileDropList();
-                      StringEnumerator myEnumerator = strColl.GetEnumerator();
-                      while (myEnumerator.MoveNext())
-                      {
-                          //Console.WriteLine("   {0}", myEnumerator.Current);
-                          pathObject = myEnumerator.Current.ToString();
-                      }
-                      //Console.WriteLine();
-                      //fi = new FileInfo(path);
-                      //string fileName = fi.Name;
-                      //string[] extensionArray = fileName.Split('.');
-                      //string extension = extensionArray[1];
-
-                      //switch (extension)
-                      //{
-                      //    case "txt":
-                      //        break;
-                      //    case "wav":
-                      //        break;
-                      //    default: //immagini
-                      //        break;
-                      //}
-                  }
-              });
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            thread.Join();
-
-            string path;
-            FileInfo fInfo;
-            string fileName;
-            string[] extensionArray = null;
-            string extension = null;
-            if (pathObject != null)
+            try
             {
-                path = (string)pathObject;
-                fInfo = new FileInfo(path);
-                fileName = fInfo.Name;
-                extensionArray = fileName.Split('.');
-                extension = extensionArray[1];
+                _dataClient.EndConnect(result); //modalita' attiva
+                _transferType = "T";
+                object pathObject = null; // Used to store the return value
+                var thread = new Thread(
+                  () =>
+                  {
+                      IDataObject dataObject = Clipboard.GetDataObject();
+                      if (Clipboard.ContainsFileDropList())
+                      {
+                          StringCollection strColl = Clipboard.GetFileDropList();
+                          StringEnumerator myEnumerator = strColl.GetEnumerator();
+                          while (myEnumerator.MoveNext())
+                          {
+                              //Console.WriteLine("   {0}", myEnumerator.Current);
+                              pathObject = myEnumerator.Current.ToString();
+                          }
+                      }
+                  });
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.Start();
+                thread.Join();
 
-                using (NetworkStream dataStream = _dataClient.GetStream())
+                string path;
+                FileInfo fInfo;
+                string[] extensionArray = null;
+
+                if (pathObject != null)
                 {
-                    //apre il file di prova nel direttorio corrente
-                    //using (FileStream fs = new FileStream("prova.txt", FileMode.Open, FileAccess.Read))
-                    //using (FileStream fs = new FileStream("prova.txt", FileMode.Open, FileAccess.Read))
-                    using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
+                    _transferType = "F"; 
+                    path = (string)pathObject;
+                    fInfo = new FileInfo(path);
+                    fileName = fInfo.Name;
+                    extensionArray = fileName.Split('.');
+                    string dirOrFile = null;
+                    if (extensionArray.Length == 1)
                     {
-                        CopyStream(fs, dataStream);
+                        path = CompressAndSend(path);
+                        FileInfo modifiedfInfo = new FileInfo(path);
+                        fileName = modifiedfInfo.Name;
+                        dirOrFile = "dir;" + fileName;
                     }
+                    else
+                    {
+                        fileExtension = extensionArray[1];
+                        dirOrFile = fileName;
+                    }
+                    
+                    using (NetworkStream dataStream = _dataClient.GetStream())
+                    {
+                        //stream per le comunicaz preliminari di controllo
+                        //non mandate sul canale di controllo perche' verrebbero intercettate dal thread
+                        //che esegue il dispatching dei comandi al server
+
+                        StreamReader dataCtrlStreamR = new StreamReader(dataStream);
+                        StreamWriter dataCtrlStreamW = new StreamWriter(dataStream);
+
+                        dataCtrlStreamW.WriteLine(dirOrFile);
+                        dataCtrlStreamW.Flush();
+
+                        string answer = dataCtrlStreamR.ReadLine();
+
+                        using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
+                        {
+                            CopyStream(fs, dataStream);
+                        }
+                        dataCtrlStreamR.Close();
+                        dataCtrlStreamW.Close();
+                        dataStream.Close();
+                    }
+
                 }
+                else
+                {
+                    //devo inviare plain text e non un file
+                }
+                _dataClient.Close();
+                //_dataClient = null;
             }
-
-            ////
-
-
-
-            ////bisogna capire dove vanno messi
-            //_dataClient.Close();
-            //_dataClient = null;
-
-            //informazioni di controllo mandate al client sul canale di controllo
-            //_controlWriter.WriteLine("226 Closing data connection, file transfer successful");
-            //_controlWriter.Flush();
+            catch (Exception)
+            {
+                Disconnetti();
+            }
         }
+        private string CompressAndSend(string path)
+        {
+            //string[] MainDirs = Directory.GetDirectories(path);
 
-        //private void GetClipboardData(Action<Object> OnFinished)
-        //{
-        //    Thread t = new Thread(() =>
-        //    {
-        //        object data = Clipboard.GetData(DataFormats.Serializable);
-        //        OnFinished(data);
-        //    });
-        //    t.SetApartmentState(ApartmentState.STA);
-        //    t.Start();
-        //}
-
+            //for (int i = 0; i < MainDirs.Length; i++)
+            //{
+            //    using (ZipFile zip = new ZipFile())
+            //    {
+            //        zip.UseUnicodeAsNecessary = true;
+            //        zip.AddDirectory(MainDirs[i]);
+            //        zip.CompressionLevel = Ionic.Zlib.CompressionLevel.BestCompression;
+            //        zip.Comment = "This zip was created at " + System.DateTime.Now.ToString("G");
+            //        zip.Save(string.Format("test{0}.zip", i));
+            //    }
+            //}
+            ZipFile zip = new ZipFile();
+            //zip.AddFile(path);
+            zip.AddDirectory(path);
+            string fileNameZip = path + ".zip";
+            zip.Save(string.Format(fileNameZip));
+            return fileNameZip;
+        }
+        
         private static long CopyStream(Stream input, Stream output, int bufferSize)
         {
+            //il metodo permette di copiare qualsiasi tipo di file, lavorando in binario
+            //il client sa riconoscere il tipo di file corretto grazie al messaggio inviatogli dal server con il nome del file
             byte[] buffer = new byte[bufferSize];
             int count = 0;
             long total = 0;
-
-            while ((count = input.Read(buffer, 0, buffer.Length)) > 0)
+            try
             {
-                output.Write(buffer, 0, count);
-                total += count;
+                //provo ad associare lo stream input (filestream) ad un binary reader
+                using (BinaryReader bReader = new BinaryReader(input))
+                {
+                    //ed lo stream di output (network stream) ad un binary writer
+                    using (BinaryWriter bWriter = new BinaryWriter(output))
+                    {
+                        while ((count = bReader.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            bWriter.Write(buffer, 0, count);
+                            total += count;
+                        }
+                    }
+                }
             }
+            catch (Exception)
+            {
+                throw;
+            }
+
+            //try
+            //{
+            //    while ((count = input.Read(buffer, 0, buffer.Length)) > 0)
+            //    {
+            //        output.Write(buffer, 0, count);
+            //        total += count;
+            //    }
+            //}
+            //catch(Exception)
+            //{
+            //    throw;
+            //}
 
             return total;
         }
@@ -379,48 +344,50 @@ namespace ProjectMalnatiServer
         {
             char[] buffer = new char[bufferSize];
             int count = 0;
-            //long total = 0;
             long total = 0;
 
-            using (StreamReader rdr = new StreamReader(input))
+            try
             {
-                using (StreamWriter wtr = new StreamWriter(output, Encoding.ASCII))
+                using (StreamReader rdr = new StreamReader(input))
                 {
-                    while ((count = rdr.Read(buffer, 0, buffer.Length)) > 0)
-                    //while ((count = rdr.Read(buffer, total, buffer.Length)) > 0)
+                    using (StreamWriter wtr = new StreamWriter(output, Encoding.ASCII))
                     {
-                        //wtr.Write(buffer, 0, count);
-                        wtr.Write(buffer, 0, count);
-                        //Console.WriteLine(buffer);
-                        //wtr.Flush();
-                        total += count;
+                        while ((count = rdr.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            wtr.Write(buffer, 0, count);
+                            total += count;
+                        }
+                        wtr.Flush();
+                        wtr.Close();
+                        //while (!string.IsNullOrEmpty(buffer = rdr.ReadLine()))
+                        //{
+                        //    wtr.WriteLine(buffer);
+                        //    wtr.Flush();
+                        //}
                     }
-                    wtr.Flush();
-                    wtr.Close();
-                    //while (!string.IsNullOrEmpty(buffer = rdr.ReadLine()))
-                    //{
-                    //    wtr.WriteLine(buffer);
-                    //    wtr.Flush();
-                    //}
                 }
-
+                //output.Close();
+                return total;
             }
-
-            output.Close();
-            return total;
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         private long CopyStream(Stream input, Stream output)
         {
-            //if (_transferType == "I")
-            //{
-            //    return CopyStream(input, output, 4096);
-            //}
-            //else
-            //{
-            //    return CopyStreamAscii(input, output, 4096);
-            //}
-            return CopyStreamAscii(input, output, 4096);
+            try
+            {
+                if (_transferType != "T") //non devo inviare plain text ma file   
+                    return CopyStream(input, output, 4096);
+
+                return CopyStreamAscii(input, output, 4096);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         #endregion
