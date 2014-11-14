@@ -24,10 +24,12 @@ using System.Threading;
 using System.IO.Compression;
 using Ionic.Zip;
 
+
 namespace ProjectMalnatiServer
 {
     public class ClientConnection
     {
+        private FtpServer rif;
         //atrributi connessione CONTROL
         private TcpClient _controlClient; //memorizza le info sul client
         //posso tirarne fuori le info di connessione
@@ -37,26 +39,25 @@ namespace ProjectMalnatiServer
         private StreamWriter _controlWriter;
 
         /****************************/
-        //attributi connessione DATA
+        //attributi connessione DATA (server like)
         private string _transferType;
         private TcpClient _dataClient;
         private IPEndPoint _dataEndpoint;
 
         private string fileName;
         private string fileExtension;
-        long size;
+        private bool isDir;
         /********************************/
 
         volatile bool _shouldStop;
 
-        public ClientConnection(TcpClient client)
+        public ClientConnection(TcpClient client, FtpServer rif)
         {
             try
             {
+                this.rif = rif;
                 _controlClient = client;
-
                 _controlStream = _controlClient.GetStream();
-
                 _controlReader = new StreamReader(_controlStream);
                 _controlWriter = new StreamWriter(_controlStream);
             }
@@ -105,7 +106,10 @@ namespace ProjectMalnatiServer
                                 case "RETR": //per scaricare dal server dei files
                                     response = Retrieve(arguments);
                                     break;
-
+                                case "COPY":
+                                    //devo far partire il listener e dare il via al client
+                                    response = Copy(arguments);
+                                    break;
                                 default:
                                     response = "502 Command not implemented";
                                     break;
@@ -145,15 +149,25 @@ namespace ProjectMalnatiServer
                 //throw;
             }
         }
+
         public void Disconnetti()
         {
             //chiudendo lo stream, il metodo handleClient va in eccezione, uscendo dai due cicli while
             if (_controlStream != null)
                 _controlStream.Close();
-            if (_dataClient != null && _dataClient.Client != null && _dataClient.Connected == true)
-                _dataClient.Close();
-            if (_controlClient != null && _controlClient.Connected == true)
+            if (_dataClient != null)
+                //if(_dataClient.Client != null && _dataClient.Connected == true)
+                // _dataClient.Close();
+                if (_dataClient.Client != null)
+                    _dataClient.Close();
+            if (_controlClient != null)
+            {
+                //if (_controlClient.Connected == true)
+                //    _controlClient.Close();
+
                 _controlClient.Close();
+            }
+
         }
 
         #region FTP Commands
@@ -192,118 +206,138 @@ namespace ProjectMalnatiServer
             try
             {
                 _dataClient.EndConnect(result); //modalita' attiva
-                _transferType = "T";
-                object pathObject = null; // Used to store the return value
+
+                _transferType = "T"; //ipotizzo di trasferire un plain text, in caso negativo lo cambio
+
+                object plainText = null;
+                object stringObject = null; // Used to store the return value
                 var thread = new Thread(
                   () =>
                   {
                       IDataObject dataObject = Clipboard.GetDataObject();
                       if (Clipboard.ContainsFileDropList())
                       {
+                          plainText = false;
                           StringCollection strColl = Clipboard.GetFileDropList();
                           StringEnumerator myEnumerator = strColl.GetEnumerator();
                           while (myEnumerator.MoveNext())
                           {
-                              //Console.WriteLine("   {0}", myEnumerator.Current);
-                              pathObject = myEnumerator.Current.ToString();
+                              stringObject = myEnumerator.Current.ToString();
                           }
+                      }
+                      else
+                      {
+                          plainText = true;
+                          stringObject = Clipboard.GetText();
                       }
                   });
                 thread.SetApartmentState(ApartmentState.STA);
                 thread.Start();
                 thread.Join();
 
-                string path;
-                FileInfo fInfo;
-                string[] extensionArray = null;
-                
-
-                if (pathObject != null)
+                long size;
+                string path = null;
+                string message = null;
+                string textClipboard = null;
+                if ((bool)plainText)
                 {
-                    _transferType = "F"; 
-                    path = (string)pathObject;
-                    fInfo = new FileInfo(path);
-                    fileName = fInfo.Name;
-                    extensionArray = fileName.Split('.');
-                    string dirOrFile = null;
-                    if (extensionArray.Length == 1)
-                    {
-                        path = CompressAndSend(path);
-                        FileInfo modifiedfInfo = new FileInfo(path);
-                        size = modifiedfInfo.Length;
-                        Console.WriteLine("Dimensione file " +modifiedfInfo.Length);
-                        fileName = modifiedfInfo.Name;
-                        dirOrFile = "dir;" + fileName;
-                    }
-                    else
-                    {
-                        fileExtension = extensionArray[1];
-                        dirOrFile = fileName;
-                        size = fInfo.Length;
-                    }
-                    
-                    using (NetworkStream dataStream = _dataClient.GetStream())
-                    {
-                        //stream per le comunicaz preliminari di controllo
-                        //non mandate sul canale di controllo perche' verrebbero intercettate dal thread
-                        //che esegue il dispatching dei comandi al server
-
-                        StreamReader dataCtrlStreamR = new StreamReader(dataStream);
-                        StreamWriter dataCtrlStreamW = new StreamWriter(dataStream);
-
-                        dataCtrlStreamW.WriteLine(dirOrFile);
-                        dataCtrlStreamW.Flush();
-
-                        string answer = dataCtrlStreamR.ReadLine();
-                        dataCtrlStreamW.WriteLine(size);
-                        dataCtrlStreamW.Flush();
-                        answer = dataCtrlStreamR.ReadLine();
-
-                        using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
-                        {
-                            CopyStream(fs, dataStream);
-                        }
-                        dataCtrlStreamR.Close();
-                        dataCtrlStreamW.Close();
-                        dataStream.Close();
-                    }
-
+                    //message = DoRetrievePlainText((string)stringObject);
+                    textClipboard = (string)stringObject;
+                    size = textClipboard.Length;
+                    message = size + "!Text";
                 }
                 else
                 {
-                    //devo inviare plain text e non un file
+                    path = (string)stringObject;
+                    message = DoRetrieveFileOrDir(ref path);
+                    FileInfo fInfo = new FileInfo(path);
+                    size = fInfo.Length;
+                }
+
+                using (NetworkStream dataStream = _dataClient.GetStream())
+                {
+                    //stream per le comunicaz preliminari di controllo
+                    //non mandate sul canale di controllo perche' verrebbero intercettate dal thread
+                    //che esegue il dispatching dei comandi al server
+
+                    StreamReader dataCtrlStreamR = new StreamReader(dataStream);
+                    StreamWriter dataCtrlStreamW = new StreamWriter(dataStream);
+
+                    dataCtrlStreamW.WriteLine(message);
+                    dataCtrlStreamW.Flush();
+
+                    string answer = dataCtrlStreamR.ReadLine();
+
+                    if (_transferType.Equals("T"))
+                    {
+                        CopyStreamPlainText(textClipboard, dataStream);
+                    }
+                    else
+                    {
+                        using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
+                        {
+                            CopyStream(fs, dataStream, 4096);
+                            //se ho inviato una cartella (compressa) devo eliminare lo zip creato
+                            if (message.StartsWith("dir;"))
+                            {
+                                if (File.Exists(path))
+                                    File.Delete(path);
+                            }
+                        }
+                    }
+
+                    dataCtrlStreamR.Close();
+                    dataCtrlStreamW.Close();
+                    dataStream.Close();
                 }
                 _dataClient.Close();
-                //_dataClient = null;
             }
             catch (Exception)
             {
                 Disconnetti();
             }
         }
-        private string CompressAndSend(string path)
-        {
-            //string[] MainDirs = Directory.GetDirectories(path);
 
-            //for (int i = 0; i < MainDirs.Length; i++)
-            //{
-            //    using (ZipFile zip = new ZipFile())
-            //    {
-            //        zip.UseUnicodeAsNecessary = true;
-            //        zip.AddDirectory(MainDirs[i]);
-            //        zip.CompressionLevel = Ionic.Zlib.CompressionLevel.BestCompression;
-            //        zip.Comment = "This zip was created at " + System.DateTime.Now.ToString("G");
-            //        zip.Save(string.Format("test{0}.zip", i));
-            //    }
-            //}
+        //si occupa di informare il client che sta per inviare un file o una cartella (compressa), in tal caso la crea
+        private string DoRetrieveFileOrDir(ref string path)
+        {
+            try
+            {
+                _transferType = "F";
+                FileInfo fInfo = new FileInfo(path);
+                fileName = fInfo.Name;
+                string[] extensionArray = fileName.Split('.');
+                if (extensionArray.Length == 1) //caso di direttorio
+                {
+                    //modifico path con il nuovo path al direttorio compresso
+                    path = CompressDir(path);
+                    FileInfo modifiedfInfo = new FileInfo(path); //in questo caso dobbiamo inviare qualcosa di diverso dal contenuto della clipboard
+                    fileName = modifiedfInfo.Name; //ritocco fileName con il nome della cartella compressa contenente il direttorio copiato
+                    long size = modifiedfInfo.Length;
+                    return size + "!dir;" + fileName; //devo informare il client che sto inviando un direttorio sotto forma di file compresso
+                }
+                else // caso di file
+                {
+                    fileExtension = extensionArray[1];
+                    long size = fInfo.Length;
+                    return size + "!" + fileName;
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private string CompressDir(string path)
+        {
             ZipFile zip = new ZipFile();
-            //zip.AddFile(path);
             zip.AddDirectory(path);
             string fileNameZip = path + ".zip";
             zip.Save(string.Format(fileNameZip));
             return fileNameZip;
         }
-        
+
         private static long CopyStream(Stream input, Stream output, int bufferSize)
         {
             //il metodo permette di copiare qualsiasi tipo di file, lavorando in binario
@@ -326,7 +360,6 @@ namespace ProjectMalnatiServer
                         }
                     }
                 }
-
             }
             catch (Exception)
             {
@@ -349,33 +382,32 @@ namespace ProjectMalnatiServer
             return total;
         }
 
-        private static long CopyStreamAscii(Stream input, Stream output, int bufferSize)
+        private static long CopyStreamPlainText(string input, Stream output)
         {
-            char[] buffer = new char[bufferSize];
-            int count = 0;
+            //byte[] bufferString;
+            //char[] bufferChar;
+            //int count = 0;
             long total = 0;
 
             try
             {
-                using (StreamReader rdr = new StreamReader(input))
-                {
-                    using (StreamWriter wtr = new StreamWriter(output, Encoding.ASCII))
-                    {
-                        while ((count = rdr.Read(buffer, 0, buffer.Length)) > 0)
-                        {
-                            wtr.Write(buffer, 0, count);
-                            total += count;
-                        }
-                        wtr.Flush();
-                        wtr.Close();
-                        //while (!string.IsNullOrEmpty(buffer = rdr.ReadLine()))
-                        //{
-                        //    wtr.WriteLine(buffer);
-                        //    wtr.Flush();
-                        //}
-                    }
-                }
-                //output.Close();
+                //bufferString = Encoding.UTF8.GetBytes(input);
+                //using (MemoryStream ms = new MemoryStream(bufferString))
+                //{
+                //    using (StreamReader streamReader = new StreamReader(ms))
+                //    {
+                //        using(StreamWriter streamWriter = new StreamWriter(output))
+                //        {
+                //            while ((count = streamReader.Read(bufferChar, 0, bufferChar.Length)) > 0)
+                //            {
+                //                streamWriter.Write()
+                //            }
+                //        }
+                //    }
+                //}
+                using (StreamWriter streamWriter = new StreamWriter(output))
+                    streamWriter.Write(input);
+
                 return total;
             }
             catch (Exception)
@@ -384,21 +416,154 @@ namespace ProjectMalnatiServer
             }
         }
 
-        private long CopyStream(Stream input, Stream output)
+        /**********************************************/
+        //metodi client-like
+
+        //copia la clipboard nel server
+        private string Copy(string pathname)
         {
+            char[] stringBuffer = new char[4096];
+            byte[] buffer = new byte[4096];
+            int total = 0;
+            int count = 0;
+            bool ricevuto = false;
+            bool isText;
+            isDir = false;
+            FileStream file = null;
+            string filePath = null;
+            TcpListener dataListener = null;
+            TcpClient dataConnection = null;
             try
             {
-                if (_transferType != "T") //non devo inviare plain text ma file   
-                    return CopyStream(input, output, 4096);
+                //in ascolto sulla stessa porta sulla quale ascolta il client
+                //quando e' il server a copiare la sua clipboard
+                dataListener = new TcpListener(IPAddress.Any, _dataEndpoint.Port);
+                dataListener.Start();
 
-                return CopyStreamAscii(input, output, 4096);
+                _controlWriter.WriteLine("go");
+                _controlWriter.Flush();
+
+                dataConnection = dataListener.AcceptTcpClient();
+                dataListener.Stop();
+
+                NetworkStream dataNetworkStream = dataConnection.GetStream();
+                StreamReader dataStreamR = new StreamReader(dataNetworkStream);
+                StreamWriter dataStreamW = new StreamWriter(dataNetworkStream);
+
+                string fileName = dataStreamR.ReadLine(); //legge il messaggio mandato dal client
+                string text = null;
+
+                string[] sizeArray = fileName.Split('!');
+                long size = Convert.ToInt64(sizeArray[0]);
+                fileName = sizeArray[1];
+
+                if (fileName.Equals("Text"))
+                {
+                    isText = true;
+                    if (dataNetworkStream.CanWrite)
+                    {
+                        dataStreamW.WriteLine("go");
+                        dataStreamW.Flush();
+                    }
+                    using (StreamReader reader = new StreamReader(dataNetworkStream))
+                    {
+
+                        text = reader.ReadToEnd();
+                        if (text.Length != size) //plain text corrotto
+                            throw new Exception();
+                    }
+                }
+                else
+                {
+                    isText = false;
+                    string[] fileNameArray = fileName.Split(';'); //; inviato solo nel caso di directory
+                    string[] fileNameArray1 = null; //utilizzato per tirare fuori il nome della directory (in ricez ho nomeDir.zip)
+
+                    if (fileNameArray.Length == 2)
+                    {
+                        isDir = true;
+                        fileName = fileNameArray[1]; //stacco dal fileName ricevuto il "dir;"
+                        fileNameArray1 = fileName.Split('.');
+                    }
+
+                    if (dataNetworkStream.CanWrite)
+                    {
+                        dataStreamW.WriteLine("go");
+                        dataStreamW.Flush();
+                    }
+
+                    filePath = "C:\\tempServer\\" + fileName; //path al file di destinazione in temp (file o cartella comp)
+                    if (File.Exists(filePath))
+                    {
+                        File.Delete(filePath);
+                    }
+                    file = File.Create(filePath);
+
+                    //fase di lettura indipendente dal tipo di file (i direttori sono letti e memorizzati come files compressi)
+                    using (BinaryReader bReader = new BinaryReader(dataNetworkStream))
+                    {
+                        using (BinaryWriter bWriter = new BinaryWriter(file))
+                        {
+                            while ((count = bReader.Read(buffer, 0, buffer.Length)) > 0)
+                            {
+                                bWriter.Write(buffer, 0, count);
+                                total += count;
+                            }
+                        }
+                    }
+                    file.Close();
+                    FileInfo fInfo = new FileInfo(filePath);
+                    if (fInfo.Length != size)
+                        throw new Exception(); //file corrotto
+
+                    if (isDir)
+                    {
+                        using (ZipFile zip = ZipFile.Read(filePath))
+                        {
+                            Directory.CreateDirectory("C:\\tempServer\\" + fileNameArray1[0]);
+                            foreach (ZipEntry e in zip)
+                            {
+                                e.Extract("C:\\tempServer\\" + fileNameArray1[0]);
+                            }
+                        }
+                        if (File.Exists(filePath)) //elimino il file compresso ricevuto, ora ho la cartella decompressa
+                            File.Delete(filePath);
+                        filePath = "C:\\tempServer\\" + fileNameArray1[0]; //imposto il nome del path alla cartella decompressa
+                    }
+                    //Console.WriteLine("File ricevuto!");    
+                    ricevuto = true;
+                }
+                dataStreamR.Close();
+                dataConnection.Close(); //connessione dati abbattuta dopo ogni trasferimento
+
+                if (isText)
+                    rif.SetClipText(text);
+                else
+                {
+                    StringCollection s = new StringCollection();
+                    s.Add(filePath);
+                    rif.setClip(s);
+                }
+                return "Copia della clipboard dal client al server";
+
             }
+
             catch (Exception)
             {
-                throw;
+                if (file != null)
+                    file.Close();
+                if (ricevuto == false) //per il plain text non devo fare niente, al rientro dalla funzione la stringa corrotta e' eliminata senza essere copiata nella clipboard
+                    if (File.Exists(filePath))
+                        File.Delete(filePath);
+                if (dataListener != null)
+                    dataListener.Stop();
+                if (dataConnection != null)
+                    if (dataConnection.Connected)
+                        dataConnection.Close();
+
+                return "Copia della clipboard dal client al server";
             }
         }
-
         #endregion
     }
 }

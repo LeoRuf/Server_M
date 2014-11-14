@@ -19,7 +19,7 @@
 
         <TextBlock x:Name="listeningTextBlock" HorizontalAlignment="Center" TextWrapping="Wrap" Margin="0,5,0,0" Text="Listening..." FontWeight="Bold"/>
         <Label Content="IP"  HorizontalAlignment="Center" Margin="0,5,0,0" FontWeight="Bold"/>
-        <TextBox x:Name="textBoxIP" Width="100" Height="20" TextWrapping="Wrap"  HorizontalAlignment="Center" Text="192.168.1.133" />
+        <TextBox x:Name="textBoxIP" Width="100" Height="20" TextWrapping="Wrap"  HorizontalAlignment="Center" Text="192.168.1.133" IsReadOnly="True"/>
         <Label Content="Porta" HorizontalAlignment="Center" Margin="0,5,0,0" FontWeight="Bold" />
         <TextBox x:Name="textBoxPort" Width="50" Height="20" HorizontalAlignment="Center" TextWrapping="Wrap" Text="1601" />
         <Label Content="Password" HorizontalAlignment="Center" Margin="0,5,0,0" FontWeight="Bold"/>

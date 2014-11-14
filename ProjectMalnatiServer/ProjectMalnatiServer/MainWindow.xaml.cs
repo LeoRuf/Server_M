@@ -19,6 +19,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Threading;
 using WindowsInput;
+using System.Collections.Specialized;
+
 
 
 namespace ProjectMalnatiServer
@@ -45,21 +47,19 @@ namespace ProjectMalnatiServer
 
         private Dispatcher dispatcher;
 
+        Socket listener;
         Socket acceptedSocket;
-        IPEndPoint myEP;
+        IPEndPoint myEP; //endpoint del server stesso
 
-        delegate void performConnection();
-        performConnection pc;
+        //delegate void performConnection();
+        //performConnection pc;
         Thread workerThreadConnection;
         Thread workerThread;
 
-        private volatile bool _shouldStop;
+        private volatile bool _shouldStop; //per bloccare thread myReceive in maniera dolce
         private bool connesso;
-        private bool  client;
-
-        bool isValidIp = true;
-        bool isValidPorta = true;
-        bool isValidPass = true;
+        private bool client;
+        private volatile bool onClosing = false;
 
         FtpServer ftpServer;
 
@@ -84,7 +84,7 @@ namespace ProjectMalnatiServer
                     textBoxIP.Text = addresses[i].ToString();
                 }
             }
-            
+
             //label_ip_local.Foreground = Brushes.Green;
             label_ip_local.FontSize = 18;
             label_ip_local.FontWeight = FontWeights.Medium;
@@ -101,24 +101,24 @@ namespace ProjectMalnatiServer
             //da aggiornare!
             //myEP = new IPEndPoint(IPAddress.Parse(this.textBoxIP.Text), Convert.ToInt16(this.textBoxPort.Text));
 
-            pc = new performConnection(() =>
-            {
-                if (connesso == true)
-                {
-                    this.listeningTextBlock.Text = "";
-                    Console.WriteLine("Server connesso" + "\n");
-                    this.buttonListen.Content = "Disconnect";
-                    this.buttonListen.IsEnabled = true; //il bottone ora permette la disconnessione dal client
-                    this.WindowState = WindowState.Minimized;
-                    //this.Hide();
-                    //workerThreadConnection.Join(); //aspetto che il thread di creaz connessione ritorna
-                    workerThread = new Thread(MyReceive); //creo un nuovo thread solo per gestire la connessione
-                    workerThread.Start();
-                    //MyReceive();
-                }
-                else
-                    MessageBox.Show("Errore di connessione ad un client");
-            });
+            //pc = new performConnection(() =>
+            //{
+            //    if (connesso == true)
+            //    {
+            //        this.listeningTextBlock.Text = "";
+            //        Console.WriteLine("Server connesso" + "\n");
+            //        this.buttonListen.Content = "Disconnect";
+            //        this.buttonListen.IsEnabled = true; //il bottone ora permette la disconnessione dal client
+            //        this.WindowState = WindowState.Minimized;
+            //        //this.Hide();
+            //        //workerThreadConnection.Join(); //aspetto che il thread di creaz connessione ritorna
+            //        workerThread = new Thread(MyReceive); //creo un nuovo thread solo per gestire la connessione
+            //        workerThread.Start();
+            //        //MyReceive();
+            //    }
+            //    else
+            //        MessageBox.Show("Errore di connessione ad un client");
+            //});
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -131,31 +131,36 @@ namespace ProjectMalnatiServer
         {
             //il bottone può fare due cose, connettere o disconnettere, occorre distinguere 
             //i due casi
+            bool isValidIp = true;
+            bool isValidPorta = true;
+            bool isValidPass = true;
 
             if (this.connesso == false && this.buttonListen.Content != "Cancel")
-            //if (this.connesso == false)
             {
                 //this.buttonListen.IsEnabled = false;
                 IPAddress address;
                 Int16 port;
 
                 //controlli sul contenuto delle boxes
-                if (!IPAddress.TryParse(this.textBoxIP.Text, out address))
-                {
-                    isValidIp = false;
-                    MessageBox.Show("IP non valido o mancante");
-                }
+                //if (!IPAddress.TryParse(this.textBoxIP.Text, out address))
+                //{
+                //    isValidIp = false;
+                //    MessageBox.Show("IP non valido o mancante");
+                //    return;
+                //}
 
-                if (!Int16.TryParse(this.textBoxPort.Text, out port))
+                if (!Int16.TryParse(this.textBoxPort.Text, out port) || port < 1024)
                 {
                     isValidPorta = false;
-                    MessageBox.Show("Porta non valida o mancante");
+                    MessageBox.Show("Porta non valida o mancante, scegliere una porta>1024");
+                    return;
                 }
 
-                if (this.textBoxPassword.Password.Length==0)
+                if (this.textBoxPassword.Password.Length == 0)
                 {
                     isValidPass = false;
                     MessageBox.Show("Password mancante");
+                    return;
                 }
 
                 if (isValidPass == true && isValidPorta == true && isValidIp == true)
@@ -171,7 +176,7 @@ namespace ProjectMalnatiServer
                     workerThreadConnection = new Thread(connetti);
                     workerThreadConnection.Start();
                 }
-                
+
             }
             else
             // else if(this.connesso == true && this.buttonListen.Content == "Cancel")
@@ -187,9 +192,12 @@ namespace ProjectMalnatiServer
         {
             //occorre occuparsi tramite questo metodo di eliminare tutte le connessioni attive, anche 
             //quelle ftp
+            if (listener != null && connesso == false)
+                listener.Close();
+
             if (connesso == true) // se il server e' gia' disconnesso non viene fatto nulla
             {
-                _shouldStop = true; //segnalo al thread di MyReceive che deve terminare
+                _shouldStop = true; //segnalo al thread di MyReceive che deve terminare (se in esecuzione)
                 if (workerThreadConnection != null)
                 {
                     //workerThreadConnection.Abort();
@@ -202,49 +210,43 @@ namespace ProjectMalnatiServer
                 //}
                 if (acceptedSocket != null)
                 {
-                    if (client == true)
-                    {
-                        if (acceptedSocket.Connected == true)
-                        {
-                            acceptedSocket.Shutdown(SocketShutdown.Both);
-                            //acceptedSocket.Close();
-                        }
+                    connesso = false;
 
-                        //this.WindowState = WindowState.Maximized;
-                        MessageBox.Show("Client ha chiuso connessione!");
+                    if (client == true) //client==true solo se e' il client a stoppare la connessione, sollevando un eccezione al server
+                    {
+                        //if (acceptedSocket.Connected == true)
+                        //{
+                        //    //acceptedSocket.Shutdown(SocketShutdown.Both);
+                        //    acceptedSocket.Close();
+                        //}
+                        //showClientStoppedConnectionMessage();
+                        acceptedSocket.Close();
+
                         client = false;
                     }
                     else
                     {
-                        if (acceptedSocket.Connected == true)
-                        {
-                            acceptedSocket.Shutdown(SocketShutdown.Both);
-                            //acceptedSocket.Close();
-                        }
+                        //if (acceptedSocket.Connected == true)
+                        //{
+                        //    //acceptedSocket.Shutdown(SocketShutdown.Both);
+                        //    acceptedSocket.Close();
+                        //}
+                        acceptedSocket.Close();
                         this.WindowState = WindowState.Maximized;
+                        ftpServer.disconnectClientConnection(); //disconnessione manuale del server ftp
                     }
                     //this.Show();
                     //acceptedSocket.Disconnect(true);
                 }
                 //devo disconnettere anche il ftpServer ftp
-                ftpServer.disconnectClientConnection();
-
-                this.connesso = false;
-                this.textBoxIP.IsEnabled = true;
-                this.textBoxPort.IsEnabled = true;
-                this.textBoxPassword.IsEnabled = true;
-                this.textBoxPassword.Password = "";
-                this.buttonListen.IsEnabled = true;
-                this.buttonListen.Content = "Listen";
-                this.listeningTextBlock.Text = "";
-
                 //_shouldStop = false; //nel caso non si tratti di chiusura dell'applicazione
             }
+            restoreUI();
         }
 
         private void connetti()
         {
-            Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             Socket handler = null;
             _shouldStop = false;
             connesso = false;
@@ -272,7 +274,7 @@ namespace ProjectMalnatiServer
                         if (numBytes > 0)
                         {
                             //if (Encoding.UTF8.GetString(check).Trim('\0').Equals(this.pass))
-                            if(true)
+                            if (true)
                             {
                                 handler.Send(check);
                                 acceptedSocket = handler;
@@ -299,13 +301,13 @@ namespace ProjectMalnatiServer
                     listener.Close();
                     //provo a creare anche la connessione del server ftp
                     IPEndPoint remoteEndPoint = (IPEndPoint)acceptedSocket.RemoteEndPoint;
-                    ftpServer = new FtpServer();
+                    ftpServer = new FtpServer(this);
                     //ftpServer.Start(remoteEndPoint.Address);
                     ftpServer.Start();
                     byte[] ftpAnswerBytes = Encoding.UTF8.GetBytes("FTPlistening");
                     acceptedSocket.BeginSend(ftpAnswerBytes, 0, ftpAnswerBytes.Length, SocketFlags.None, BeginSendCallback, acceptedSocket);
                     acceptedSocket.Receive(check);
-                    
+
                     if (Encoding.UTF8.GetString(check).Trim('\0').Equals("ready"))
                     {
                         connesso = true;
@@ -315,7 +317,8 @@ namespace ProjectMalnatiServer
                     {
                         acceptedSocket.Close();
                     }
-                    dispatcher.Invoke(pc);
+                    //dispatcher.Invoke(pc);
+                    setConnectedUI();
                     return;
                 }
 
@@ -329,8 +332,10 @@ namespace ProjectMalnatiServer
             catch (SocketException)
             {
                 Console.WriteLine("Errore in fase di ascolto sul socket\n");
-                if (handler != null && handler.Connected == true)
+                if (handler != null)
                     handler.Close();
+                //if (listener != null)
+                //    listener.Close();
                 disconnetti();
             }
             catch (System.FormatException) { Console.WriteLine("Errore!"); }
@@ -338,12 +343,141 @@ namespace ProjectMalnatiServer
             catch (Exception ex) { Console.WriteLine(ex.ToString()); }
         }
 
+        /******************************/
+        //metodi per il dispatcher
+        private void restoreUI()
+        {
+            Action action = new Action(() =>
+            {
+                this.connesso = false;
+                this.textBoxIP.IsEnabled = true;
+                this.textBoxPort.IsEnabled = true;
+                this.textBoxPassword.IsEnabled = true;
+                this.textBoxPassword.Password = "";
+                this.buttonListen.IsEnabled = true;
+                this.buttonListen.Content = "Listen";
+                this.listeningTextBlock.Text = "";
+            });
+
+            if (onClosing == false)
+                dispatcher.Invoke(action);
+        }
+
+        private void setConnectedUI()
+        {
+            Action action = new Action(() =>
+            {
+                if (connesso == true)
+                {
+                    this.listeningTextBlock.Text = "";
+                    Console.WriteLine("Server connesso" + "\n");
+                    this.buttonListen.Content = "Disconnect";
+                    this.buttonListen.IsEnabled = true; //il bottone ora permette la disconnessione dal client
+                    this.WindowState = WindowState.Minimized;
+                    //this.Hide();
+                    //workerThreadConnection.Join(); //aspetto che il thread di creaz connessione ritorna
+                    workerThread = new Thread(MyReceive); //creo un nuovo thread solo per gestire la connessione
+                    workerThread.Start();
+                    //MyReceive();
+                }
+                else
+                    MessageBox.Show("Errore di connessione ad un client");
+            });
+
+            dispatcher.Invoke(action);
+        }
+
+        private void showClientStoppedConnectionMessage()
+        {
+            Action action = new Action(() =>
+            {
+                this.WindowState = WindowState.Maximized;
+                //this.Show();
+                MessageBox.Show("Client ha chiuso connessione!");
+            });
+            if (connesso == true)
+                dispatcher.Invoke(action);
+        }
+
+        public void SetClip(StringCollection s)
+        {
+            Action action = () =>
+            {
+                //Console.WriteLine("Sto settando clipboard");
+                Clipboard.SetFileDropList(s);
+                MessageBox.Show("Clipboard copiata nel server!");
+            };
+
+            dispatcher.BeginInvoke(action);
+        }
+
+        public void SetClipText(string text)
+        {
+            Action action = () =>
+            {
+                Clipboard.SetText(text);
+                MessageBox.Show("Clipboard copiata nel server!");
+            };
+
+            dispatcher.Invoke(action);
+        }
+        /**************************/
+
+
+        /*****************************/
+        //metodi connessione mouse+tastiera
+        public static void BeginSendCallback(IAsyncResult ar) { }
+
+        public void MyReceive()
+        {
+            while (!_shouldStop)
+            {
+                try
+                {
+                    byte[] buffer = new byte[50];
+                    string bufferString;
+                    byte[] stringa = Encoding.UTF8.GetBytes("D");
+                    acceptedSocket.BeginSend(stringa, 0, stringa.Length, SocketFlags.None, BeginSendCallback, acceptedSocket);
+
+                    int numBytes = acceptedSocket.Receive(buffer); //questa receive e' "non bloccante"
+
+                    if (numBytes > 0)
+                    {
+                        bufferString = Encoding.UTF8.GetString(buffer);
+                        parseFunction(bufferString);
+                    }
+                }
+
+                catch (SocketException se)
+                {
+                    Console.WriteLine("errore con codice: " + se.ErrorCode);
+                    //10060
+                    if (se.ErrorCode != 10060) //perchè se timeout scatta viene lanciata, ma non occorre reagire!
+                    { //if(se.ErrorCode==10054) //10054 quando il client fa disconnetti o cancella..io faccio la send ma mi da questa eccezione..
+                        //{
+                        //Action showWindow = () => {
+                        //    client = true;
+                        //    disconnetti();
+                        //};
+                        showClientStoppedConnectionMessage();
+
+                        client = true;
+                        disconnetti();
+                        //dispatcher.Invoke(showWindow);
+                        break;
+                    }
+
+                }
+            }
+            Console.WriteLine("Il thread myReceive sta per terminare\n");
+        }
+
         private void parseFunction(string bufferString)
         {
             String car = null;
-            bool isChar=false;
+            bool isChar = false;
             int count = 0;
-               
+
             foreach (char ch in bufferString)
             {
                 if (ch == '\0')
@@ -370,7 +504,7 @@ namespace ProjectMalnatiServer
                     dispatcher.Invoke(mouseLeftDown);
                     continue;
                 }
-                
+
                 if (ch == 'R')
                 {
                     Action mouseRightDownOrUp = () => { Win32.mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, (uint)p.x, (uint)p.y, 0, 0); };
@@ -378,11 +512,11 @@ namespace ProjectMalnatiServer
                     continue;
                 }
 
-                if (ch != '?' && ch != ';' && ch!= '-')
+                if (ch != '?' && ch != ';' && ch != '-')
                 {
                     if (isChar == true)
                     {
-                        car+= ch;
+                        car += ch;
                         count++;
                         //if (count == 3)
                         //{
@@ -398,8 +532,8 @@ namespace ProjectMalnatiServer
                         //    {
                         //        InputSimulator.SimulateKeyUp((VirtualKeyCode)Convert.ToInt16(car[1].ToString()+car[2].ToString()));
                         //    }
-                            
-                          //  continue;
+
+                        //  continue;
                         //}
                         continue;
                     }
@@ -415,7 +549,7 @@ namespace ProjectMalnatiServer
                 {
                     if (ch == ';')
                         isX = false;
-                    
+
                     if (ch == '-')
                     {
                         if (isChar == true)
@@ -429,11 +563,11 @@ namespace ProjectMalnatiServer
                                     InputSimulator.SimulateKeyDown((VirtualKeyCode)Convert.ToInt16(car[1].ToString()));
 
                                 }
-                                
+
                                 if (count == 3)
                                 {
                                     InputSimulator.SimulateKeyDown((VirtualKeyCode)Convert.ToInt16(car[1].ToString() + car[2].ToString()));
-                                    
+
                                 }
                                 if (count == 4)
                                 {
@@ -452,23 +586,23 @@ namespace ProjectMalnatiServer
                                     InputSimulator.SimulateKeyUp((VirtualKeyCode)Convert.ToInt16(car[1].ToString()));
 
                                 }
-                             
+
                                 if (count == 3)
                                 {
                                     InputSimulator.SimulateKeyUp((VirtualKeyCode)Convert.ToInt16(car[1].ToString() + car[2].ToString()));
-                                    
+
                                 }
                                 if (count == 4)
                                 {
                                     InputSimulator.SimulateKeyUp((VirtualKeyCode)Convert.ToInt16(car[1].ToString() + car[2].ToString() + car[3].ToString()));
-                                    
+
                                 }
 
                                 count = 0;
                                 car = null;
                                 continue;
                             }
-                        
+
                         }
                         else
                         {
@@ -494,66 +628,28 @@ namespace ProjectMalnatiServer
                             //Console.WriteLine("x:" + p.x + " y:" + p.y + "\n");
 
                             Action setCurPos = () => { Win32.SetCursorPos(p.x, p.y); };
-                            if(!_shouldStop)
-                            dispatcher.Invoke(setCurPos);
+                            if (!_shouldStop)
+                                dispatcher.Invoke(setCurPos);
                         }
                     }
                 }
             }
         }
-        //uu
+        /***************************/
 
-        public static void BeginSendCallback(IAsyncResult ar) { }
-        public void MyReceive()
+        private void closeWindowOperations(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            while (!_shouldStop)
-            {
-                try
-                {
-                    byte[] buffer = new byte[50];
-                    string bufferString;
-                    byte[] stringa = Encoding.UTF8.GetBytes("D");
-                    acceptedSocket.BeginSend(stringa,0,stringa.Length,SocketFlags.None, BeginSendCallback, acceptedSocket);
+            // MessageBox.Show("Ho chiuso finestra e ora annullo tutto!");
 
-                    int numBytes = acceptedSocket.Receive(buffer); //questa receive e' "non bloccante"
-                    
-                    if (numBytes > 0)
-                    {
-                        bufferString = Encoding.UTF8.GetString(buffer);
-                        parseFunction(bufferString);
-                    }
-                }
-
-                catch (SocketException se)
-                {
-                    Console.WriteLine("errore con codice: " + se.ErrorCode);
-                    //10060
-                     if (se.ErrorCode != 10060) //perchè se timeout scatta viene lanciata, ma non occorre reagire!
-                      //if(se.ErrorCode==10054) //10054 quando il client fa disconnetti o cancella..io faccio la send ma mi da questa eccezione..
-                        {
-                        Action showWindow = () => {
-                            client = true;
-                            disconnetti();
-                        };
-                        dispatcher.Invoke(showWindow);
-                        break;
-                    }
-                      
-                }
-            }
-            Console.WriteLine("Il thread myReceive sta per terminare\n");
-        }
-
-   private void closeWindowOperations(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-           // MessageBox.Show("Ho chiuso finestra e ora annullo tutto!");
-            
-            if (acceptedSocket != null)
-                disconnetti();
+            //if (acceptedSocket != null)
+            onClosing = true;
+            disconnetti();
             //MessageBox.Show("Sto chiudendo finestra e non sono connesso!");
             //this.Hide();
-            
+
         }
+
+
     }
 
 }
