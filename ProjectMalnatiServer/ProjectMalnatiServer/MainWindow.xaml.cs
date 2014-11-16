@@ -273,8 +273,8 @@ namespace ProjectMalnatiServer
                         //controllo password
                         if (numBytes > 0)
                         {
-                            //if (Encoding.UTF8.GetString(check).Trim('\0').Equals(this.pass))
-                            if (true)
+                            if (Encoding.UTF8.GetString(check).Trim('\0').Equals(this.pass))
+                            //if (true)
                             {
                                 handler.Send(check);
                                 acceptedSocket = handler;
@@ -509,6 +509,15 @@ namespace ProjectMalnatiServer
                 {
                     Action mouseRightDownOrUp = () => { Win32.mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, (uint)p.x, (uint)p.y, 0, 0); };
                     dispatcher.Invoke(mouseRightDownOrUp);
+                    continue;
+                }
+                if (ch == 'W') {
+                    Win32.mouse_event(0x800, 0, 0, +40,0);
+                    continue;
+                }
+                if (ch == 'P')
+                {
+                    Win32.mouse_event(0x01000, 0, 0,40,0);
                     continue;
                 }
 
