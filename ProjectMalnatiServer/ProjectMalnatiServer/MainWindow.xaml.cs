@@ -66,7 +66,7 @@ namespace ProjectMalnatiServer
         public MainWindow()
         {
             InitializeComponent();
-
+            Clipboard.Clear();
             //ottenimento dell'ip locale
             hostname = Dns.GetHostName();
 
@@ -421,6 +421,29 @@ namespace ProjectMalnatiServer
 
             dispatcher.Invoke(action);
         }
+
+        public void DisplayErrorMessage()
+        {
+            Action action = () =>
+            {
+                MessageBox.Show("Errore copia clipboard");
+            };
+            dispatcher.Invoke(action);
+        }
+
+        public bool ShowOptions()
+        {
+            object var=true;
+            Action action = () =>
+            {
+                MessageBoxResult res = MessageBox.Show("Vuoi interrompere trasferimento?", "Copia clipboard in corso!", MessageBoxButton.YesNo);
+                if (res == MessageBoxResult.Yes)
+                    var = true;
+                else
+                    var = false;
+            };
+            return (bool) var;
+        }
         /**************************/
 
 
@@ -517,7 +540,7 @@ namespace ProjectMalnatiServer
                 }
                 if (ch == 'P')
                 {
-                    Win32.mouse_event(0x01000, 0, 0,40,0);
+                    Win32.mouse_event(0x01000, 0, 0, 40, 0);
                     continue;
                 }
 

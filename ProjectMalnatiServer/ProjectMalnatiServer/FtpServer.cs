@@ -85,5 +85,15 @@ namespace ProjectMalnatiServer
         {
             rif.SetClip(s);
         }
+
+        public void DisplayErrorMessage()
+        {
+            rif.DisplayErrorMessage();
+        }
+
+        public bool ShowOptions()
+        {
+            return rif.ShowOptions();
+        }
     }
 }

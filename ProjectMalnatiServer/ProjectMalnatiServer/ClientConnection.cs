@@ -44,6 +44,8 @@ namespace ProjectMalnatiServer
         private TcpClient _dataClient;
         private IPEndPoint _dataEndpoint;
 
+        private TcpClient dataConnection;
+
         private string fileName;
         private string fileExtension;
         private bool isDir;
@@ -209,6 +211,7 @@ namespace ProjectMalnatiServer
 
                 _transferType = "T"; //ipotizzo di trasferire un plain text, in caso negativo lo cambio
 
+                object emptyClip = null;
                 object plainText = null;
                 object stringObject = null; // Used to store the return value
                 var thread = new Thread(
@@ -227,8 +230,16 @@ namespace ProjectMalnatiServer
                       }
                       else
                       {
-                          plainText = true;
-                          stringObject = Clipboard.GetText();
+                          IDataObject data = Clipboard.GetDataObject();
+                          if (data == null)
+                          {
+                              emptyClip = true;
+                          }
+                          else
+                          {
+                              plainText = true;
+                              stringObject = Clipboard.GetText();
+                          }
                       }
                   });
                 thread.SetApartmentState(ApartmentState.STA);
@@ -239,6 +250,7 @@ namespace ProjectMalnatiServer
                 string path = null;
                 string message = null;
                 string textClipboard = null;
+
                 if ((bool)plainText)
                 {
                     //message = DoRetrievePlainText((string)stringObject);
@@ -246,12 +258,16 @@ namespace ProjectMalnatiServer
                     size = textClipboard.Length;
                     message = size + "!Text";
                 }
-                else
+                else if((bool)emptyClip==false)
                 {
                     path = (string)stringObject;
                     message = DoRetrieveFileOrDir(ref path);
                     FileInfo fInfo = new FileInfo(path);
                     size = fInfo.Length;
+                }
+                else
+                {
+                    message="empty";
                 }
 
                 using (NetworkStream dataStream = _dataClient.GetStream())
@@ -265,6 +281,9 @@ namespace ProjectMalnatiServer
 
                     dataCtrlStreamW.WriteLine(message);
                     dataCtrlStreamW.Flush();
+
+                    if (message.Equals("empty"))
+                        throw new Exception();
 
                     string answer = dataCtrlStreamR.ReadLine();
 
@@ -294,7 +313,10 @@ namespace ProjectMalnatiServer
             }
             catch (Exception)
             {
-                Disconnetti();
+                //Disconnetti();
+                if (_dataClient != null)
+                    if (_dataClient.Connected)
+                        _dataClient.Close();
             }
         }
 
@@ -431,8 +453,24 @@ namespace ProjectMalnatiServer
             isDir = false;
             FileStream file = null;
             string filePath = null;
+            bool yes=false; //usato per non far riapparire il messaggio di errore in caso di annullamento volontario copia clipboard nell'eccezione
+
+            if(dataConnection!=null)
+            {
+                if (dataConnection.Connected)
+                {
+                  bool answer =  rif.ShowOptions();
+                    if (answer == true)
+                    {
+                        yes = true;
+                        throw new Exception();
+                    }
+                     return "copia clipboard interrotta";
+                }
+            }
+
             TcpListener dataListener = null;
-            TcpClient dataConnection = null;
+            dataConnection = null;
             try
             {
                 //in ascolto sulla stessa porta sulla quale ascolta il client
@@ -520,6 +558,8 @@ namespace ProjectMalnatiServer
                     {
                         using (ZipFile zip = ZipFile.Read(filePath))
                         {
+                            if (Directory.Exists("C:\\tempServer\\" + fileNameArray1[0]))
+                                DeleteDirectory("C:\\tempServer\\" + fileNameArray1[0]);
                             Directory.CreateDirectory("C:\\tempServer\\" + fileNameArray1[0]);
                             foreach (ZipEntry e in zip)
                             {
@@ -552,9 +592,12 @@ namespace ProjectMalnatiServer
             {
                 if (file != null)
                     file.Close();
-                if (ricevuto == false) //per il plain text non devo fare niente, al rientro dalla funzione la stringa corrotta e' eliminata senza essere copiata nella clipboard
+                if (ricevuto == false && yes==false) //per il plain text non devo fare niente, al rientro dalla funzione la stringa corrotta e' eliminata senza essere copiata nella clipboard
+                {
                     if (File.Exists(filePath))
                         File.Delete(filePath);
+                    rif.DisplayErrorMessage();
+                }
                 if (dataListener != null)
                     dataListener.Stop();
                 if (dataConnection != null)
@@ -563,6 +606,25 @@ namespace ProjectMalnatiServer
 
                 return "Copia della clipboard dal client al server";
             }
+        }
+
+        public static void DeleteDirectory(string target_dir)
+        {
+            string[] files = Directory.GetFiles(target_dir);
+            string[] dirs = Directory.GetDirectories(target_dir);
+
+            foreach (string file in files)
+            {
+                File.SetAttributes(file, FileAttributes.Normal);
+                File.Delete(file);
+            }
+
+            foreach (string dir in dirs)
+            {
+                DeleteDirectory(dir);
+            }
+
+            Directory.Delete(target_dir, false);
         }
         #endregion
     }
