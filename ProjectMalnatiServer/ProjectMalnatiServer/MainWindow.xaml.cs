@@ -8,11 +8,11 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Net.Sockets;
+using System.Windows.Media;
 using System.Net;
 using System.Windows.Interop;
 using System.Text.RegularExpressions;
@@ -592,6 +592,7 @@ namespace ProjectMalnatiServer
                             {
                                 if (count == 2)
                                 {
+                                    
                                     InputSimulator.SimulateKeyDown((VirtualKeyCode)Convert.ToInt16(car[1].ToString()));
 
                                 }
@@ -601,6 +602,7 @@ namespace ProjectMalnatiServer
                                     InputSimulator.SimulateKeyDown((VirtualKeyCode)Convert.ToInt16(car[1].ToString() + car[2].ToString()));
 
                                 }
+
                                 if (count == 4)
                                 {
                                     InputSimulator.SimulateKeyDown((VirtualKeyCode)Convert.ToInt16(car[1].ToString() + car[2].ToString() + car[3].ToString()));
@@ -674,8 +676,8 @@ namespace ProjectMalnatiServer
             // MessageBox.Show("Ho chiuso finestra e ora annullo tutto!");
 
             //if (acceptedSocket != null)
-            onClosing = true;
-            disconnetti();
+            //onClosing = true;
+            //disconnetti();
             //MessageBox.Show("Sto chiudendo finestra e non sono connesso!");
             //this.Hide();
 
