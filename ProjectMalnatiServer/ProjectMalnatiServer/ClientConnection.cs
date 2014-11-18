@@ -211,7 +211,6 @@ namespace ProjectMalnatiServer
 
                 _transferType = "T"; //ipotizzo di trasferire un plain text, in caso negativo lo cambio
 
-                object emptyClip = null;
                 object plainText = null;
                 object stringObject = null; // Used to store the return value
                 var thread = new Thread(
@@ -229,17 +228,9 @@ namespace ProjectMalnatiServer
                           }
                       }
                       else
-                      {
-                          IDataObject data = Clipboard.GetDataObject();
-                          if (data == null)
-                          {
-                              emptyClip = true;
-                          }
-                          else
-                          {
+                      {                        
                               plainText = true;
-                              stringObject = Clipboard.GetText();
-                          }
+                              stringObject = Clipboard.GetText();          
                       }
                   });
                 thread.SetApartmentState(ApartmentState.STA);
@@ -258,17 +249,14 @@ namespace ProjectMalnatiServer
                     size = textClipboard.Length;
                     message = size + "!Text";
                 }
-                else if((bool)emptyClip==false)
+                else 
                 {
                     path = (string)stringObject;
                     message = DoRetrieveFileOrDir(ref path);
                     FileInfo fInfo = new FileInfo(path);
                     size = fInfo.Length;
                 }
-                else
-                {
-                    message="empty";
-                }
+               
 
                 using (NetworkStream dataStream = _dataClient.GetStream())
                 {

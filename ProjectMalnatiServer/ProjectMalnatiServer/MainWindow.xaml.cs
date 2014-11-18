@@ -41,7 +41,7 @@ namespace ProjectMalnatiServer
 
         string hostname;
         string pass;
-        byte[] check = new byte[64];
+        //byte[] check = new byte[64];
 
         Win32.POINT p = new Win32.POINT();
 
@@ -248,6 +248,7 @@ namespace ProjectMalnatiServer
         {
             listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             Socket handler = null;
+            byte[] check = new byte[64];
             _shouldStop = false;
             connesso = false;
             client = false;
@@ -415,6 +416,11 @@ namespace ProjectMalnatiServer
         {
             Action action = () =>
             {
+                if(text.Length==0)
+                {
+                    MessageBox.Show("Clipboard vuota!");
+                    return;
+                }
                 Clipboard.SetText(text);
                 MessageBox.Show("Clipboard copiata nel server!");
             };
@@ -534,17 +540,17 @@ namespace ProjectMalnatiServer
                     dispatcher.Invoke(mouseRightDownOrUp);
                     continue;
                 }
-                if (ch == 'W') {
-                    Win32.mouse_event(0x800, 0, 0, +40,0);
-                    continue;
-                }
-                if (ch == 'P')
-                {
-                    Win32.mouse_event(0x01000, 0, 0, 40, 0);
-                    continue;
-                }
+                //if (ch == 'W') {
+                //    Win32.mouse_event(0x800, 0, 0, +40,0);
+                //    continue;
+                //}
+                //if (ch == 'P')
+                //{
+                //    Win32.mouse_event(0x01000, 0, 0, 40, 0);
+                //    continue;
+                //}
 
-                if (ch != '?' && ch != ';' && ch != '-')
+                if (ch != '?' && ch != ';' && ch != '_')
                 {
                     if (isChar == true)
                     {
@@ -582,7 +588,7 @@ namespace ProjectMalnatiServer
                     if (ch == ';')
                         isX = false;
 
-                    if (ch == '-')
+                    if (ch == '_')
                     {
                         if (isChar == true)
                         {
@@ -608,6 +614,11 @@ namespace ProjectMalnatiServer
                                     InputSimulator.SimulateKeyDown((VirtualKeyCode)Convert.ToInt16(car[1].ToString() + car[2].ToString() + car[3].ToString()));
                                 }
 
+                                if (count == 5)
+                                {
+                                    InputSimulator.SimulateKeyDown((VirtualKeyCode)Convert.ToInt16(car[1].ToString() + car[2].ToString() + car[3].ToString() + car[4].ToString()));
+
+                                }
                                 count = 0;
                                 car = null;
                                 continue;
@@ -631,6 +642,7 @@ namespace ProjectMalnatiServer
                                     InputSimulator.SimulateKeyUp((VirtualKeyCode)Convert.ToInt16(car[1].ToString() + car[2].ToString() + car[3].ToString()));
 
                                 }
+
 
                                 count = 0;
                                 car = null;
@@ -672,14 +684,14 @@ namespace ProjectMalnatiServer
         /***************************/
 
         private void closeWindowOperations(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            // MessageBox.Show("Ho chiuso finestra e ora annullo tutto!");
+        {   
+            if (acceptedSocket != null)
+                onClosing = true;
+            disconnetti();
+            InputSimulator.SimulateKeyDown((VirtualKeyCode)164);
 
-            //if (acceptedSocket != null)
-            //onClosing = true;
-            //disconnetti();
-            //MessageBox.Show("Sto chiudendo finestra e non sono connesso!");
-            //this.Hide();
+            InputSimulator.SimulateKeyUp((VirtualKeyCode)164);
+            //InputSimulator.SimulateKeyUp((VirtualKeyCode)162);
 
         }
 
