@@ -20,9 +20,8 @@ using System.Threading;
 using System.Windows.Threading;
 using WindowsInput;
 using System.Collections.Specialized;
-
-
-
+using System.Drawing;
+using System.Windows.Forms;
 
 
 namespace ProjectMalnatiServer
@@ -63,14 +62,32 @@ namespace ProjectMalnatiServer
         private bool client;
         private volatile bool onClosing = false;
 
+        System.Windows.Forms.NotifyIcon ni;
+
         FtpServer ftpServer;
+        protected override void OnStateChanged(EventArgs e)
+        {
+            if (WindowState == WindowState.Minimized)
+                this.Hide();
+
+            base.OnStateChanged(e);
+        }
 
         public MainWindow()
         {
             InitializeComponent();
-            //width = System.Windows.SystemParameters.VirtualScreenWidth;
-            //height = System.Windows.SystemParameters.VirtualScreenHeight;
-            Clipboard.Clear();
+
+            ni = new System.Windows.Forms.NotifyIcon();
+            ni.Icon = new System.Drawing.Icon("Inactive.ico");
+            ni.Visible = true;
+            ni.DoubleClick +=
+                delegate(object sender, EventArgs args)
+                {
+                    this.Show();
+                    this.WindowState = WindowState.Normal;
+                };
+
+            System.Windows.Forms.Clipboard.Clear();
             //ottenimento dell'ip locale
             hostname = Dns.GetHostName();
 
@@ -156,14 +173,14 @@ namespace ProjectMalnatiServer
                 if (!Int16.TryParse(this.textBoxPort.Text, out port) || port < 1024)
                 {
                     isValidPorta = false;
-                    MessageBox.Show("Porta non valida o mancante, scegliere una porta>1024");
+                    System.Windows.Forms.MessageBox.Show("Porta non valida o mancante, scegliere una porta>1024");
                     return;
                 }
 
                 if (this.textBoxPassword.Password.Length == 0)
                 {
                     isValidPass = false;
-                    MessageBox.Show("Password mancante");
+                    System.Windows.Forms.MessageBox.Show("Password mancante");
                     return;
                 }
 
@@ -196,6 +213,9 @@ namespace ProjectMalnatiServer
         {
             //occorre occuparsi tramite questo metodo di eliminare tutte le connessioni attive, anche 
             //quelle ftp
+            ni.Icon = new System.Drawing.Icon("Inactive.ico");
+            ni.Visible = true;
+
             if (listener != null && connesso == false)
                 listener.Close();
 
@@ -386,7 +406,7 @@ namespace ProjectMalnatiServer
                     //MyReceive();
                 }
                 else
-                    MessageBox.Show("Errore di connessione ad un client");
+                    System.Windows.Forms.MessageBox.Show("Errore di connessione ad un client");
             });
 
             dispatcher.Invoke(action);
@@ -398,7 +418,7 @@ namespace ProjectMalnatiServer
             {
                 this.WindowState = WindowState.Maximized;
                 //this.Show();
-                MessageBox.Show("Client ha chiuso connessione!");
+                System.Windows.Forms.MessageBox.Show("Client ha chiuso connessione!");
             });
             if (connesso == true)
                 dispatcher.Invoke(action);
@@ -409,8 +429,8 @@ namespace ProjectMalnatiServer
             Action action = () =>
             {
                 //Console.WriteLine("Sto settando clipboard");
-                Clipboard.SetFileDropList(s);
-                MessageBox.Show("Clipboard copiata nel server!");
+                System.Windows.Forms.Clipboard.SetFileDropList(s);
+                System.Windows.Forms.MessageBox.Show("Clipboard copiata nel server!");
             };
 
             dispatcher.BeginInvoke(action);
@@ -420,13 +440,13 @@ namespace ProjectMalnatiServer
         {
             Action action = () =>
             {
-                if(text.Length==0)
+                if (text.Length == 0)
                 {
-                    MessageBox.Show("Clipboard vuota!");
+                    System.Windows.Forms.MessageBox.Show("Clipboard vuota!");
                     return;
                 }
-                Clipboard.SetText(text);
-                MessageBox.Show("Clipboard copiata nel server!");
+                System.Windows.Forms.Clipboard.SetText(text);
+                System.Windows.Forms.MessageBox.Show("Clipboard copiata nel server!");
             };
 
             dispatcher.Invoke(action);
@@ -436,23 +456,23 @@ namespace ProjectMalnatiServer
         {
             Action action = () =>
             {
-                MessageBox.Show("Errore copia clipboard");
+                System.Windows.Forms.MessageBox.Show("Errore copia clipboard");
             };
             dispatcher.Invoke(action);
         }
 
         public bool ShowOptions()
         {
-            object var=true;
+            object var = true;
             Action action = () =>
             {
-                MessageBoxResult res = MessageBox.Show("Vuoi interrompere trasferimento?", "Copia clipboard in corso!", MessageBoxButton.YesNo);
-                if (res == MessageBoxResult.Yes)
+                System.Windows.Forms.DialogResult res = System.Windows.Forms.MessageBox.Show("Vuoi interrompere trasferimento?", "Copia clipboard in corso!", System.Windows.Forms.MessageBoxButtons.YesNo);
+                if (res == System.Windows.Forms.DialogResult.Yes)
                     var = true;
                 else
                     var = false;
             };
-            return (bool) var;
+            return (bool)var;
         }
         /**************************/
 
@@ -603,8 +623,18 @@ namespace ProjectMalnatiServer
                             {
                                 if (count == 2)
                                 {
-                                    
-                                    InputSimulator.SimulateKeyDown((VirtualKeyCode)Convert.ToInt16(car[1].ToString()));
+                                    if (car.Equals("XA"))
+                                    { 
+                                        ni.Icon = new System.Drawing.Icon("Error.ico");
+                                        ni.Visible = true;
+                                    }
+                                    else if (car.Equals("XI"))
+                                    {
+                                        ni.Icon = new System.Drawing.Icon("Inactive.ico");
+                                        ni.Visible = true;
+                                    }
+                                    else
+                                        InputSimulator.SimulateKeyDown((VirtualKeyCode)Convert.ToInt16(car[1].ToString()));
                                 }
 
                                 if (count == 3)
@@ -670,7 +700,7 @@ namespace ProjectMalnatiServer
 
                             p.x = Convert.ToInt16(x_rel * 1920);
                             p.y = Convert.ToInt16(y_rel * 1200);
-                            
+
 
                             coordX = "";
                             coordY = "";
@@ -688,7 +718,7 @@ namespace ProjectMalnatiServer
         /***************************/
 
         private void closeWindowOperations(object sender, System.ComponentModel.CancelEventArgs e)
-        {   
+        {
             if (acceptedSocket != null)
                 onClosing = true;
             disconnetti();
