@@ -24,7 +24,7 @@
         <TextBox x:Name="textBoxPort" Width="50" Height="20" HorizontalAlignment="Center" TextWrapping="Wrap" Text="1601" />
         <Label Content="Password" HorizontalAlignment="Center" Margin="0,5,0,0" FontWeight="Bold"/>
         <PasswordBox x:Name="textBoxPassword" Width="100" Height="20" HorizontalAlignment="Center" Margin="159,0,156,0"/>
-        <Button x:Name="buttonListen" Width="80" Height="40" Margin="0,20,0,10" Content="Listen" HorizontalAlignment="Center"  Click="listenSocket"  FontWeight="Bold" RenderTransformOrigin="0.047,0.582" Foreground="#FF7DBEEF" BorderBrush="#FF664C7B">
+        <Button x:Name="buttonListen" Width="80" Height="40" Margin="0,20,0,10" Content="Ascolta" HorizontalAlignment="Center"  Click="listenSocket"  FontWeight="Bold" RenderTransformOrigin="0.047,0.582" Foreground="#FF7DBEEF" BorderBrush="#FF664C7B">
             <Button.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="Black" Offset="1"/>

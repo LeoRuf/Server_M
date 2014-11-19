@@ -24,6 +24,7 @@ using System.Collections.Specialized;
 
 
 
+
 namespace ProjectMalnatiServer
 {
     /// <summary>
@@ -39,9 +40,6 @@ namespace ProjectMalnatiServer
         private const int MOUSEEVENTF_LEFTUP = 0x04;
         private const int MOUSEEVENTF_RIGHTDOWN = 0x08;
         private const int MOUSEEVENTF_RIGHTUP = 0x10;
-
-        double width;
-        double height;
 
         string hostname;
         string pass;
@@ -70,9 +68,8 @@ namespace ProjectMalnatiServer
         public MainWindow()
         {
             InitializeComponent();
-            width=System.Windows.SystemParameters.PrimaryScreenWidth;
-            height=System.Windows.SystemParameters.PrimaryScreenHeight;
-
+            //width = System.Windows.SystemParameters.VirtualScreenWidth;
+            //height = System.Windows.SystemParameters.VirtualScreenHeight;
             Clipboard.Clear();
             //ottenimento dell'ip locale
             hostname = Dns.GetHostName();
@@ -142,7 +139,7 @@ namespace ProjectMalnatiServer
             bool isValidPorta = true;
             bool isValidPass = true;
 
-            if (this.connesso == false && this.buttonListen.Content != "Cancel")
+            if (this.connesso == false && this.buttonListen.Content != "Cancella")
             {
                 //this.buttonListen.IsEnabled = false;
                 IPAddress address;
@@ -174,8 +171,8 @@ namespace ProjectMalnatiServer
                 {
 
                     myEP = new IPEndPoint(IPAddress.Parse(this.textBoxIP.Text), Convert.ToInt16(this.textBoxPort.Text));
-                    this.buttonListen.Content = "Cancel";
-                    this.listeningTextBlock.Text = "Listening...";
+                    this.buttonListen.Content = "Cancella";
+                    this.listeningTextBlock.Text = "In ascolto...";
                     this.textBoxIP.IsEnabled = false;
                     this.textBoxPort.IsEnabled = false;
                     this.textBoxPassword.IsEnabled = false;
@@ -363,7 +360,7 @@ namespace ProjectMalnatiServer
                 this.textBoxPassword.IsEnabled = true;
                 this.textBoxPassword.Password = "";
                 this.buttonListen.IsEnabled = true;
-                this.buttonListen.Content = "Listen";
+                this.buttonListen.Content = "Ascolta";
                 this.listeningTextBlock.Text = "";
             });
 
@@ -379,7 +376,7 @@ namespace ProjectMalnatiServer
                 {
                     this.listeningTextBlock.Text = "";
                     Console.WriteLine("Server connesso" + "\n");
-                    this.buttonListen.Content = "Disconnect";
+                    this.buttonListen.Content = "Disconnetti";
                     this.buttonListen.IsEnabled = true; //il bottone ora permette la disconnessione dal client
                     this.WindowState = WindowState.Minimized;
                     //this.Hide();
@@ -547,15 +544,16 @@ namespace ProjectMalnatiServer
                     dispatcher.Invoke(mouseRightDownOrUp);
                     continue;
                 }
-                //if (ch == 'W') {
-                //    Win32.mouse_event(0x800, 0, 0, +40,0);
-                //    continue;
-                //}
-                //if (ch == 'P')
-                //{
-                //    Win32.mouse_event(0x01000, 0, 0, 40, 0);
-                //    continue;
-                //}
+                if (ch == 'W')
+                {
+                    Win32.mouse_event(0x800, 0, 0, 40, 0);
+                    continue;
+                }
+                if (ch == 'P')
+                {
+                    Win32.mouse_event(0x800, 0, 0, -40, 0);
+                    continue;
+                }
 
                 if (ch != '?' && ch != ';' && ch != '_')
                 {
@@ -607,7 +605,6 @@ namespace ProjectMalnatiServer
                                 {
                                     
                                     InputSimulator.SimulateKeyDown((VirtualKeyCode)Convert.ToInt16(car[1].ToString()));
-
                                 }
 
                                 if (count == 3)
@@ -624,7 +621,6 @@ namespace ProjectMalnatiServer
                                 if (count == 5)
                                 {
                                     InputSimulator.SimulateKeyDown((VirtualKeyCode)Convert.ToInt16(car[1].ToString() + car[2].ToString() + car[3].ToString() + car[4].ToString()));
-
                                 }
                                 count = 0;
                                 car = null;
@@ -672,10 +668,9 @@ namespace ProjectMalnatiServer
                             double x_rel = Convert.ToDouble(coordX);
                             double y_rel = Convert.ToDouble(coordY);
 
-                            //p.x = Convert.ToInt16(x_rel * 1920);
-                            //p.y = Convert.ToInt16(y_rel * 1200);
-                            p.x = Convert.ToInt16(x_rel * width);
-                            p.y = Convert.ToInt16(y_rel * height);
+                            p.x = Convert.ToInt16(x_rel * 1920);
+                            p.y = Convert.ToInt16(y_rel * 1200);
+                            
 
                             coordX = "";
                             coordY = "";

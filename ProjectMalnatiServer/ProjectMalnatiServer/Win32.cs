@@ -17,7 +17,9 @@ namespace ProjectMalnatiServer
         public static extern bool ClientToScreen(IntPtr hWnd, ref POINT point);
 
         [DllImport("User32.Dll")]
-        public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, uint dwExtraInfo);
+        public static extern void mouse_event(uint dwFlags, uint dx, uint dy, int cButtons, uint dwExtraInfo);
+
+        //public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, uint dwExtraInfo);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct POINT
