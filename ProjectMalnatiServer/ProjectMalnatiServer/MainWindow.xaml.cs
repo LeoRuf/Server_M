@@ -24,6 +24,7 @@ using System.Drawing;
 using System.Windows.Forms;
 
 
+
 namespace ProjectMalnatiServer
 {
     /// <summary>
@@ -65,6 +66,7 @@ namespace ProjectMalnatiServer
         System.Windows.Forms.NotifyIcon ni;
 
         FtpServer ftpServer;
+
         protected override void OnStateChanged(EventArgs e)
         {
             if (WindowState == WindowState.Minimized)
@@ -72,13 +74,56 @@ namespace ProjectMalnatiServer
 
             base.OnStateChanged(e);
         }
+        private void menuItem1_Click(object Sender, EventArgs e)
+        {
+            // Close the form, which closes the application. 
+            this.Close();
+        }
+        private void menuItem2_Click(object Sender, EventArgs e)
+        {
+            //Riduce a icon il form
+            this.Hide();
+        }
+        private void menuItem3_Click(object Sender, EventArgs e)
+        {
+            //Riduce a icon il form
+            this.Show();
+        }
 
         public MainWindow()
         {
             InitializeComponent();
 
+           
+
             ni = new System.Windows.Forms.NotifyIcon();
             ni.Icon = new System.Drawing.Icon("Inactive.ico");
+
+            // Initialize contextMenu1 
+            System.Windows.Forms.ContextMenu contextMenu1=new System.Windows.Forms.ContextMenu();
+            System.Windows.Forms.MenuItem menuItem1=new System.Windows.Forms.MenuItem();
+            System.Windows.Forms.MenuItem menuItem2 = new System.Windows.Forms.MenuItem();
+            System.Windows.Forms.MenuItem menuItem3 = new System.Windows.Forms.MenuItem();
+            contextMenu1.MenuItems.AddRange(
+                    new System.Windows.Forms.MenuItem[] { menuItem1,menuItem2, menuItem3 });
+
+            // Initialize menuItem1 
+            menuItem1.Index = 0;
+            menuItem1.Text = "Esci";
+            menuItem1.Click += new System.EventHandler(this.menuItem1_Click);
+
+            //initialize menuItem2
+            menuItem2.Index = 1;
+            menuItem2.Text = "Riduci a icona";
+            menuItem2.Click += new System.EventHandler(this.menuItem2_Click);
+
+            //initialize menuItem2
+            menuItem3.Index = 2;
+            menuItem3.Text = "Mostra";
+            menuItem3.Click += new System.EventHandler(this.menuItem3_Click);
+
+            ni.ContextMenu = contextMenu1;
+
             ni.Visible = true;
             ni.DoubleClick +=
                 delegate(object sender, EventArgs args)
@@ -728,6 +773,15 @@ namespace ProjectMalnatiServer
             //InputSimulator.SimulateKeyUp((VirtualKeyCode)162);
 
         }
+
+       
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            var hwnd = new WindowInteropHelper(this).Handle;
+            Win32.SetWindowLong(hwnd, Win32.GWL_STYLE, Win32.GetWindowLong(hwnd, Win32.GWL_STYLE) & ~Win32.WS_SYSMENU);
+        }
+
+        
 
 
     }
