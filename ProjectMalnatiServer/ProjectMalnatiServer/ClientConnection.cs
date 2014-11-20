@@ -317,7 +317,14 @@ namespace ProjectMalnatiServer
                 FileInfo fInfo = new FileInfo(path);
                 fileName = fInfo.Name;
                 string[] extensionArray = fileName.Split('.');
-                if (extensionArray.Length == 1) //caso di direttorio
+
+                if(File.Exists(path))
+                {
+                    
+                    long size = fInfo.Length;
+                    return size + "!" + fileName;
+                }
+                else 
                 {
                     //modifico path con il nuovo path al direttorio compresso
                     path = CompressDir(path);
@@ -325,13 +332,24 @@ namespace ProjectMalnatiServer
                     fileName = modifiedfInfo.Name; //ritocco fileName con il nome della cartella compressa contenente il direttorio copiato
                     long size = modifiedfInfo.Length;
                     return size + "!dir;" + fileName; //devo informare il client che sto inviando un direttorio sotto forma di file compresso
+  
                 }
-                else // caso di file
-                {
-                    fileExtension = extensionArray[1];
-                    long size = fInfo.Length;
-                    return size + "!" + fileName;
-                }
+                
+                //if (extensionArray.Length == 1) //caso di direttorio
+                //{
+                //    //modifico path con il nuovo path al direttorio compresso
+                //    path = CompressDir(path);
+                //    FileInfo modifiedfInfo = new FileInfo(path); //in questo caso dobbiamo inviare qualcosa di diverso dal contenuto della clipboard
+                //    fileName = modifiedfInfo.Name; //ritocco fileName con il nome della cartella compressa contenente il direttorio copiato
+                //    long size = modifiedfInfo.Length;
+                //    return size + "!dir;" + fileName; //devo informare il client che sto inviando un direttorio sotto forma di file compresso
+                //}
+                //else // caso di file
+                //{
+                //    fileExtension = extensionArray[1];
+                //    long size = fInfo.Length;
+                //    return size + "!" + fileName;
+                //}
             }
             catch (Exception)
             {
@@ -517,6 +535,8 @@ namespace ProjectMalnatiServer
                         dataStreamW.WriteLine("go");
                         dataStreamW.Flush();
                     }
+                    if (!Directory.Exists("C:\\tempServer"))
+                        Directory.CreateDirectory("C:\\tempServer");
 
                     filePath = "C:\\tempServer\\" + fileName; //path al file di destinazione in temp (file o cartella comp)
                     if (File.Exists(filePath))
@@ -544,11 +564,23 @@ namespace ProjectMalnatiServer
 
                     if (isDir)
                     {
+                        string nome_dir = null;
+                        for (int i = 0; i < fileNameArray1.Length - 1; i++)
+                        {
+
+                            if (nome_dir == null)
+                            {
+                                nome_dir = nome_dir + fileNameArray1[i];
+                                continue;
+                            }
+                            nome_dir = nome_dir + "." + fileNameArray1[i];
+                        }
+
                         using (ZipFile zip = ZipFile.Read(filePath))
                         {
-                            if (Directory.Exists("C:\\tempServer\\" + fileNameArray1[0]))
-                                DeleteDirectory("C:\\tempServer\\" + fileNameArray1[0]);
-                            Directory.CreateDirectory("C:\\tempServer\\" + fileNameArray1[0]);
+                            if (Directory.Exists("C:\\tempServer\\" + nome_dir))
+                                DeleteDirectory("C:\\tempServer\\" + nome_dir);
+                            Directory.CreateDirectory("C:\\tempServer\\" + nome_dir);
                             foreach (ZipEntry e in zip)
                             {
                                 e.Extract("C:\\tempServer\\" + fileNameArray1[0]);

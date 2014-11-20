@@ -132,7 +132,7 @@ namespace ProjectMalnatiServer
                     this.WindowState = WindowState.Normal;
                 };
 
-            System.Windows.Forms.Clipboard.Clear();
+           // System.Windows.Forms.Clipboard.Clear();
             //ottenimento dell'ip locale
             hostname = Dns.GetHostName();
 
@@ -266,6 +266,7 @@ namespace ProjectMalnatiServer
 
             if (connesso == true) // se il server e' gia' disconnesso non viene fatto nulla
             {
+                connesso = false;
                 _shouldStop = true; //segnalo al thread di MyReceive che deve terminare (se in esecuzione)
                 if (workerThreadConnection != null)
                 {
@@ -339,11 +340,14 @@ namespace ProjectMalnatiServer
                         //sbloccando la receive, tranne che se la linea cade improvvisamente
 
                         int numBytes = handler.Receive(check);
-                        string pwd = Encoding.UTF8.GetString(check);
+                        string pwd = Encoding.UTF8.GetString(check).Trim('\0');
                         //controllo password
                         if (numBytes > 0)
                         {
-                            if (Encoding.UTF8.GetString(check).Trim('\0').Equals(this.pass))
+                            Console.WriteLine("Client: " + pwd);
+                            Console.WriteLine("\nServer: " + this.pass);
+
+                            if (pwd.Equals(this.pass))
                             //if (true)
                             {
                                 handler.Send(check);
@@ -576,6 +580,10 @@ namespace ProjectMalnatiServer
             bool isChar = false;
             int count = 0;
 
+            try
+            {
+
+            
             foreach (char ch in bufferString)
             {
                 if (ch == '\0')
@@ -758,6 +766,11 @@ namespace ProjectMalnatiServer
                         }
                     }
                 }
+            }
+        }
+            catch(Exception)
+            {
+                return;
             }
         }
         /***************************/
